@@ -1,0 +1,5 @@
+ultra
+example
+*.o
+*.out
+build
