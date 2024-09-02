@@ -12,20 +12,20 @@ UltraServer ultra_init(int port) {
     server.sockfd = socket(AF_INET, SOCK_STREAM, 0);
     
     if(server.sockfd == -1) {
-        fprintf(stderr, "ERROR: could not create the socket");
+        fprintf(stderr, "ERROR: could not create the socket\n");
         exit(1);
     }
 
     struct sockaddr_in addr;
     addr.sin_family = AF_INET;
     addr.sin_port = htons(port);
-    addr.sin_addr.s_addr = INADDR_ANY;
+    addr.sin_addr.s_addr = htonl(INADDR_ANY);
     memset(addr.sin_zero, 0, sizeof(addr.sin_zero));
 
     int b = bind(server.sockfd, (struct sockaddr*)&addr, sizeof(addr));
 
     if(b == -1) {
-        fprintf(stderr, "ERROR: could not bind the socket");
+        fprintf(stderr, "ERROR: could not bind the socket\n");
         exit(1);
     }
 
