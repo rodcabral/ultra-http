@@ -1,4 +1,4 @@
-FLAGS = -Wall -Wextra -DLOG_USE_COLOR
+FLAGS = -Wall -Wextra
 
 BUILD = ./build
 
