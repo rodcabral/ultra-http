@@ -2,7 +2,7 @@
 
 int main(void) {
 
-    ultra_hello();
+    UltraServer server = ultra_init(8080);
 
     return 0;
 }
