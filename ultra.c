@@ -4,6 +4,13 @@
 #include <stdio.h>
 #include <arpa/inet.h>
 #include <netdb.h>
+#include <unistd.h>
+#include <pthread.h>
+
+void handle_connection() {
+    sleep(1);
+    printf("connected!\n");
+}
 
 UltraServer ultra_init(int port) {
     UltraServer server;
@@ -31,7 +38,8 @@ UltraServer ultra_init(int port) {
         exit(1);
     }
 
-    int l = listen(server.sockfd, 1);
+    int backlog = 32;
+    int l = listen(server.sockfd, backlog);
 
     if(l == -1) {
         fprintf(stderr, "ERROR: could not start listen\n");
@@ -39,4 +47,19 @@ UltraServer ultra_init(int port) {
     }
 
     return server;
+}
+
+void ultra_connect(UltraServer* server) {
+    while(1) {
+        int connectfd = accept(server->sockfd, 0, 0);
+
+        if(connectfd == -1) {
+            fprintf(stderr, "ERROR: could not accept the connection\n");
+            close(server->sockfd);
+            exit(1);
+        }
+
+        pthread_t thread;
+        pthread_create(&thread, NULL, (void*)handle_connection, NULL);
+    }
 }

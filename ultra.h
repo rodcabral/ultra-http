@@ -13,4 +13,6 @@ typedef struct {
 
 UltraServer ultra_init(int port);
 
+void ultra_connect(UltraServer* server);
+
 #endif
