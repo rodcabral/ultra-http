@@ -8,6 +8,7 @@
 typedef struct {
     uint16_t port;
     int sockfd;
+    struct sockaddr_in *addr;
 } UltraServer;
 
 UltraServer ultra_init(int port);

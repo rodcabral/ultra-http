@@ -22,10 +22,19 @@ UltraServer ultra_init(int port) {
     addr.sin_addr.s_addr = htonl(INADDR_ANY);
     memset(addr.sin_zero, 0, sizeof(addr.sin_zero));
 
+    server.addr = &addr;
+
     int b = bind(server.sockfd, (struct sockaddr*)&addr, sizeof(addr));
 
     if(b == -1) {
         fprintf(stderr, "ERROR: could not bind the socket\n");
+        exit(1);
+    }
+
+    int l = listen(server.sockfd, 1);
+
+    if(l == -1) {
+        fprintf(stderr, "ERROR: could not start listen\n");
         exit(1);
     }
 
