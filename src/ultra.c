@@ -7,9 +7,16 @@
 #include <unistd.h>
 #include <pthread.h>
 
-void handle_connection() {
+void handle_connection(int *clientfd) {
     sleep(1);
-    printf("connected!\n");
+    printf("| client connected! fd: %d |\n", *clientfd);
+
+    char buffer[100];
+    snprintf(buffer, 100, "Hello from %d\n", *clientfd);
+
+    send(*clientfd, buffer, 100, 0);
+    
+    free(clientfd);
 }
 
 UltraServer ultra_init(int port) {
@@ -51,15 +58,22 @@ UltraServer ultra_init(int port) {
 
 void ultra_connect(UltraServer* server) {
     while(1) {
-        int connectfd = accept(server->sockfd, 0, 0);
+        struct sockaddr_in client;
+        socklen_t c = sizeof(client);
 
-        if(connectfd == -1) {
+        int curr_client = accept(server->sockfd, (struct sockaddr*)&client, &c);
+        
+        if(curr_client == -1) {
             fprintf(stderr, "ERROR: could not accept the connection\n");
             close(server->sockfd);
             exit(1);
         }
 
+        int *clientfd = malloc(sizeof(int));
+        *clientfd = curr_client;
+
         pthread_t thread;
-        pthread_create(&thread, NULL, (void*)handle_connection, NULL);
+        pthread_create(&thread, NULL, (void*)handle_connection, (void*)clientfd);
+        pthread_detach(thread);
     }
 }
