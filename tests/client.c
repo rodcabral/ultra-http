@@ -25,7 +25,11 @@ int main(int argc, char**argv) {
         return -1;
     }
 
-    printf("CLIENT CONNECTED!\n");
+    char buffer[100];
+
+    while(recv(sockfd, buffer, 100, 0) > 0) {
+        printf("buffer: %s\n", buffer);
+    }
 
     return 0;
 }
