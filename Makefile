@@ -1,4 +1,4 @@
-FLAGS = -Wall -g -Wextra
+FLAGS = -Wall -g -Wextra -fsanitize=address
 
 BUILD = ./build
 
@@ -6,7 +6,7 @@ $(BUILD)/ultra.o: build ./src/ultra.c ./src/ultra.h
 	$(CC) $(FLAGS) -c ./src/ultra.c -o $(BUILD)/ultra.o
 
 example: $(BUILD)/ultra.o ./examples/hello.c
-	$(CC) $(CFLAGS) ./examples/hello.c $(BUILD)/ultra.o -o example
+	$(CC) $(FLAGS) ./examples/hello.c $(BUILD)/ultra.o -o example
 
 build:
 	mkdir build
