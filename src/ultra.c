@@ -7,6 +7,25 @@
 #include <unistd.h>
 #include <pthread.h>
 
+pthread_mutex_t lock;
+
+typedef struct Node{
+    int value;
+    struct Node* next;
+} Node;
+
+typedef struct Queue {
+    Node* head;
+} Queue;
+
+Queue *init_queue() {
+    Queue* queue = malloc(sizeof(Queue));
+
+    queue->head = NULL;
+        
+    return queue;
+}
+
 void handle_connection(int *clientfd) {
     sleep(1);
     printf("| client connected! fd: %d |\n", *clientfd);
@@ -15,8 +34,81 @@ void handle_connection(int *clientfd) {
     snprintf(buffer, 100, "Hello from %d\n", *clientfd);
 
     send(*clientfd, buffer, 100, 0);
-    
-    free(clientfd);
+}
+
+void enqueue(Queue* queue, int* value) {
+    Node* new_node = malloc(sizeof(Node));
+    new_node->value = *value;
+    new_node->next = NULL;
+
+    if(!queue->head) {
+        queue->head = new_node;
+        return;
+    }
+
+    Node* temp = queue->head;
+
+    while(temp) {
+        if(temp->next == NULL) {
+            temp->next = new_node;
+            return;
+        }
+
+        temp = temp->next;
+    }
+}
+
+int dequeue(Queue* queue) {
+    if(queue->head == NULL) {
+        return -1;
+    }
+
+    int value = -1;
+
+    if(queue->head) {
+        value = queue->head->value;
+
+        Node* temp = malloc(sizeof(Node));
+
+        if(queue->head->next) {
+            queue->head = queue->head->next;
+        } else {
+            queue->head = NULL;
+        }
+
+        free(temp);
+    }
+
+    return value;
+}
+
+tpool_t tpool;
+Queue* queue = NULL;
+
+void worker() {
+    while(1) {
+        pthread_mutex_lock(&lock);
+        int clientfd = dequeue(queue);
+        pthread_mutex_unlock(&lock);
+
+        if(clientfd != -1) {
+            handle_connection(&clientfd);
+        }
+    }
+}
+
+tpool_t create_tpool(int max_threads) {
+    tpool_t tpool;
+
+    tpool.max_threads = max_threads;
+    tpool.threads = (pthread_t*)malloc(sizeof(pthread_t) * max_threads);
+
+    for(int i = 0; i < max_threads; ++i) {
+        pthread_create(&tpool.threads[i], NULL, (void*)worker, NULL);
+        pthread_detach(tpool.threads[i]);
+    }
+
+    return tpool;
 }
 
 UltraServer ultra_init(int port) {
@@ -24,6 +116,11 @@ UltraServer ultra_init(int port) {
 
     server.port = port;
     server.sockfd = socket(AF_INET, SOCK_STREAM, 0);
+
+    pthread_mutex_init(&lock, NULL);
+
+    queue = init_queue();
+    tpool = create_tpool(20);
     
     if(server.sockfd == -1) {
         fprintf(stderr, "ERROR: could not create the socket\n");
@@ -72,8 +169,6 @@ void ultra_connect(UltraServer* server) {
         int *clientfd = malloc(sizeof(int));
         *clientfd = curr_client;
 
-        pthread_t thread;
-        pthread_create(&thread, NULL, (void*)handle_connection, (void*)clientfd);
-        pthread_detach(thread);
+        enqueue(queue, clientfd);
     }
 }

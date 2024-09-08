@@ -6,6 +6,11 @@
 #include <inttypes.h>
 
 typedef struct {
+    int max_threads;
+    pthread_t *threads;
+} tpool_t;
+
+typedef struct {
     uint16_t port;
     int sockfd;
     struct sockaddr_in *addr;
