@@ -1,4 +1,4 @@
-FLAGS = -Wall -Wextra
+FLAGS = -Wall -g -Wextra
 
 BUILD = ./build
 
