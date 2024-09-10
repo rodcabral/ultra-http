@@ -51,30 +51,26 @@ Queue *init_queue() {
 }
 
 int _ultra_get(int* clientfd) {
-    char *get_buffer = malloc(sizeof(char) * 5000);
+    char *get_buffer = malloc(sizeof(char) * 50000);
 
-    recv(*clientfd, get_buffer, 5000, 0);
+    snprintf(get_buffer, 50000, 
+             "HTTP/1.1 200 OK\r\n"
+             "Content-Length: 33\r\n"
+             "Content-Type: text/html\r\n"
+             "\r\n"
+             "<body><h1>hello world!</h1></body>");
 
-    printf("%s", get_buffer);    
+    send(*clientfd, get_buffer, strlen(get_buffer), 0);
 
-    free(get_buffer);
     return 0;
 }
 
 void handle_connection(int *clientfd) {
-    sleep(1);
     printf("Client connected: %d\n", *clientfd);
 
     _ultra_get(clientfd);
 
-    char *buffer = malloc(sizeof(char) * 50000);
-    snprintf(buffer, 50000, "Hello from server! (%d)\n", *clientfd);
-
-    send(*clientfd, buffer, 50000, 0);
-
     close(*clientfd);
-
-    free(buffer);
 }
 
 void enqueue(Queue* queue, int* value) {
