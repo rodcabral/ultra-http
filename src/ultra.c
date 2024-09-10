@@ -62,6 +62,8 @@ int _ultra_get(int* clientfd) {
 
     send(*clientfd, get_buffer, strlen(get_buffer), 0);
 
+    free(get_buffer);
+
     return 0;
 }
 
