@@ -30,6 +30,7 @@ SOFTWARE.
 #include <sys/socket.h>
 #include <unistd.h>
 #include <pthread.h>
+#include <fcntl.h>
 
 pthread_mutex_t lock;
 
@@ -50,15 +51,31 @@ Queue *init_queue() {
     return queue;
 }
 
+int ultra_get(UltraServer *server, const char *path, const char *file_path) {
+
+    return 0;
+}
+
 int _ultra_get(int* clientfd) {
+    int fd = open("./examples/404.html", O_RDONLY);
+
+    if(fd == -1) {
+        fprintf(stderr, "ERROR: could not open the file!\n");
+        return -1;
+    }
+    
+    char *fd_buffer = malloc(sizeof(char) * 10000);
+
+    read(fd, fd_buffer, 10000);
+
     char *get_buffer = malloc(sizeof(char) * 50000);
 
     snprintf(get_buffer, 50000, 
              "HTTP/1.1 200 OK\r\n"
-             "Content-Length: 33\r\n"
+             "Content-Length: %lu\r\n"
              "Content-Type: text/html\r\n"
              "\r\n"
-             "<body><h1>hello world!</h1></body>");
+             "%s", strlen(fd_buffer), fd_buffer);
 
     send(*clientfd, get_buffer, strlen(get_buffer), 0);
 
