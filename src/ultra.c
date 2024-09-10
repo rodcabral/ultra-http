@@ -27,6 +27,7 @@ SOFTWARE.
 #include <stdio.h>
 #include <arpa/inet.h>
 #include <netdb.h>
+#include <sys/socket.h>
 #include <unistd.h>
 #include <pthread.h>
 
@@ -49,14 +50,31 @@ Queue *init_queue() {
     return queue;
 }
 
+int _ultra_get(int* clientfd) {
+    char *get_buffer = malloc(sizeof(char) * 5000);
+
+    recv(*clientfd, get_buffer, 5000, 0);
+
+    printf("%s", get_buffer);    
+
+    free(get_buffer);
+    return 0;
+}
+
 void handle_connection(int *clientfd) {
     sleep(1);
-    printf("| client connected! fd: %d |\n", *clientfd);
+    printf("Client connected: %d\n", *clientfd);
 
-    char buffer[100];
-    snprintf(buffer, 100, "Hello from %d\n", *clientfd);
+    _ultra_get(clientfd);
 
-    send(*clientfd, buffer, 100, 0);
+    char *buffer = malloc(sizeof(char) * 50000);
+    snprintf(buffer, 50000, "Hello from server! (%d)\n", *clientfd);
+
+    send(*clientfd, buffer, 50000, 0);
+
+    close(*clientfd);
+
+    free(buffer);
 }
 
 void enqueue(Queue* queue, int* value) {
