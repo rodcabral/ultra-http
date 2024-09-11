@@ -9,7 +9,7 @@ NOTE: This is an experimental library for now.
 ```c
 #include "ultra.h"
 
-void handle(int* fd) {
+void handle_connection(int* fd) {
     if(ultra_current_path(fd, "/")) {
         ultra_get(fd, "index.html");
     } else {
@@ -19,7 +19,7 @@ void handle(int* fd) {
 
 int main(void) {
     UltraServer server = ultra_init(8080);
-    ultra_connect(&server, handle);
+    ultra_connect(&server, handle_connection);
     return 0;
 }
 ```
