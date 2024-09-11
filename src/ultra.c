@@ -1,3 +1,25 @@
+/*
+Copyright (c) 2024 Rodrigo Cabral (rodcabral)
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+*/
+
 #include "ultra.h"
 #include <stdlib.h>
 #include <string.h>
@@ -28,19 +50,20 @@ Queue *init_queue() {
     return queue;
 }
 
-int _ultra_current_path(const char* path) {
-    // TODO: Get the real request message
-    const char* request = "GET /file.html HTTP/1.1";
+int ultra_current_path(int* fd, const char* path) {
+    char* request = malloc(sizeof(char) * 20000);
+
+    recv(*fd, request, 20000, 0);
 
     int start  = 0;
-    for(int i = 0; i < strlen(request); ++i) {
+    for(size_t i = 0; i < strlen(request); ++i) {
         if(request[i] == '/') {
             start = i;
             break;
         }
     }
 
-    char *current_path = malloc(255);
+    char *current_path = malloc(sizeof(char) * 255);
 
     int j = 0;
     for(int i = start; request[i] != ' '; ++i) {
@@ -50,20 +73,19 @@ int _ultra_current_path(const char* path) {
 
     if(strncmp(path, current_path, 255) == 0) {
         free(current_path);
+        free(request);
         return 1;
     }
     free(current_path);
+    free(request);
 
     return 0;
 }
 
-int ultra_current_path(const char *path) {
-    int val = _ultra_current_path(path);
-    return val;
-}
-
-int _ultra_get(int* clientfd) {
-    int fd = open("./examples/404.html", O_RDONLY);
+int ultra_get(int* clientfd, const char* file_path) {
+    pthread_mutex_lock(&lock);
+    int fd = open(file_path, O_RDONLY);
+    pthread_mutex_unlock(&lock);
 
     if(fd == -1) {
         fprintf(stderr, "ERROR: could not open the file!\n");
@@ -86,16 +108,13 @@ int _ultra_get(int* clientfd) {
     send(*clientfd, get_buffer, strlen(get_buffer), 0);
 
     free(get_buffer);
+    free(fd_buffer);
+
+    pthread_mutex_lock(&lock);
+    close(fd);
+    pthread_mutex_unlock(&lock);
 
     return 0;
-}
-
-void handle_connection(int *clientfd) {
-    printf("Client connected: %d\n", *clientfd);
-
-    _ultra_get(clientfd);
-
-    close(*clientfd);
 }
 
 void enqueue(Queue* queue, int* value) {
@@ -146,6 +165,14 @@ int dequeue(Queue* queue) {
 
 tpool_t tpool;
 Queue* queue = NULL;
+
+void handle_connection(int *clientfd) {
+    printf("Client connected: %d\n", *clientfd);
+
+    ultra_get(clientfd, "./examples/index.html");
+
+    close(*clientfd);
+}
 
 void worker() {
     while(1) {
@@ -215,7 +242,7 @@ UltraServer ultra_init(int port) {
     return server;
 }
 
-void ultra_connect(UltraServer* server) {
+void ultra_connect(UltraServer* server, void (*handle)(int *fd)) {
     while(1) {
         struct sockaddr_in client;
         socklen_t c = sizeof(client);
@@ -232,5 +259,7 @@ void ultra_connect(UltraServer* server) {
         *clientfd = curr_client;
 
         enqueue(queue, clientfd);
+
+        //handle(clientfd);
     }
 }
