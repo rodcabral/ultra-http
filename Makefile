@@ -1,4 +1,4 @@
-FLAGS = -Wall -g -Wextra -fsanitize=address
+FLAGS = -Wall -g -Wextra
 
 BUILD = ./build
 
