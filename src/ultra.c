@@ -169,7 +169,7 @@ Queue* queue = NULL;
 void handle_connection(int *clientfd) {
     printf("Client connected: %d\n", *clientfd);
 
-    ultra_get(clientfd, "./examples/index.html");
+    //ultra_get(clientfd, "./examples/index.html");
 
     close(*clientfd);
 }
@@ -258,8 +258,9 @@ void ultra_connect(UltraServer* server, void (*handle)(int *fd)) {
         int *clientfd = malloc(sizeof(int));
         *clientfd = curr_client;
 
-        enqueue(queue, clientfd);
+        //enqueue(queue, clientfd);
 
-        //handle(clientfd);
+        pthread_t thread;
+        pthread_create(&thread, NULL, (void*)handle, (void*)clientfd);
     }
 }
