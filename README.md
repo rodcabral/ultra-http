@@ -8,6 +8,7 @@ NOTE: This is an experimental library for now.
 
 ```c
 #include "ultra.h"
+#include <unistd.h>
 
 void handle_connection(int* fd) {
     if(ultra_current_path(fd, "/")) {
@@ -15,6 +16,8 @@ void handle_connection(int* fd) {
     } else {
         ultra_get(fd, "404.html");
     }
+
+    close(*fd);
 }
 
 int main(void) {
