@@ -34,7 +34,8 @@ SOFTWARE.
 pthread_mutex_t lock;
 
 typedef struct Node{
-    int value;
+    int* value;
+    void(*handle)(int*fd);
     struct Node* next;
 } Node;
 
@@ -50,76 +51,10 @@ Queue *init_queue() {
     return queue;
 }
 
-int ultra_current_path(int* fd, const char* path) {
-    char* request = malloc(sizeof(char) * 20000);
-
-    recv(*fd, request, 20000, 0);
-
-    int start  = 0;
-    for(size_t i = 0; i < strlen(request); ++i) {
-        if(request[i] == '/') {
-            start = i;
-            break;
-        }
-    }
-
-    char *current_path = malloc(sizeof(char) * 255);
-
-    int j = 0;
-    for(int i = start; request[i] != ' '; ++i) {
-        current_path[j++] = request[i];
-    }
-    current_path[j] = '\0';
-
-    if(strncmp(path, current_path, 255) == 0) {
-        free(current_path);
-        free(request);
-        return 1;
-    }
-    free(current_path);
-    free(request);
-
-    return 0;
-}
-
-int ultra_get(int* clientfd, const char* file_path) {
-    pthread_mutex_lock(&lock);
-    int fd = open(file_path, O_RDONLY);
-    pthread_mutex_unlock(&lock);
-
-    if(fd == -1) {
-        fprintf(stderr, "ERROR: could not open the file!\n");
-        return -1;
-    }
-    
-    char *fd_buffer = malloc(sizeof(char) * 10000);
-
-    read(fd, fd_buffer, 10000);
-
-    char *get_buffer = malloc(sizeof(char) * 50000);
-
-    snprintf(get_buffer, 50000, 
-             "HTTP/1.1 200 OK\r\n"
-             "Content-Length: %lu\r\n"
-             "Content-Type: text/html\r\n"
-             "\r\n"
-             "%s", strlen(fd_buffer), fd_buffer);
-
-    send(*clientfd, get_buffer, strlen(get_buffer), 0);
-
-    free(get_buffer);
-    free(fd_buffer);
-
-    pthread_mutex_lock(&lock);
-    close(fd);
-    pthread_mutex_unlock(&lock);
-
-    return 0;
-}
-
-void enqueue(Queue* queue, int* value) {
+void enqueue(Queue* queue, int* value, void (*handle)(int* fd)) {
     Node* new_node = malloc(sizeof(Node));
-    new_node->value = *value;
+    new_node->value = value;
+    new_node->handle = handle;
     new_node->next = NULL;
 
     if(!queue->head) {
@@ -139,50 +74,59 @@ void enqueue(Queue* queue, int* value) {
     }
 }
 
-int dequeue(Queue* queue) {
+Node* dequeue(Queue* queue) {
     if(queue->head == NULL) {
-        return -1;
+        return NULL;
     }
 
-    int value = -1;
-
-    if(queue->head) {
-        value = queue->head->value;
-
-        Node* temp = malloc(sizeof(Node));
-
-        if(queue->head->next) {
-            queue->head = queue->head->next;
-        } else {
-            queue->head = NULL;
-        }
-
-        free(temp);
+    Node* temp = queue->head;
+    if(queue->head->next) {
+        queue->head = queue->head->next;
+    } else {
+        queue->head = NULL;
     }
 
-    return value;
+    return temp;
+}
+
+int ultra_current_path(int* fd, const char* path) {
+    return 0;
+}
+
+int ultra_get(int* fd, const char* file_path) {
+    char* buffer = malloc(sizeof(char) * 10000);
+
+    const char *body = "<h1>Hello, World!</h1>";
+    snprintf(buffer, 10000, 
+             "HTTP/1.1 200 OK\r\n"
+             "Content-Length: %lu\r\n"
+             "Content-Type: text/html\r\n"
+             "\r\n"
+             "%s",
+             strlen(body), body);
+
+    send(*fd, buffer, strlen(buffer), 0);
+
+    free(buffer);
+
+    return 0;
 }
 
 tpool_t tpool;
 Queue* queue = NULL;
 
-void handle_connection(int *clientfd) {
-    printf("Client connected: %d\n", *clientfd);
-
-    //ultra_get(clientfd, "./examples/index.html");
-
-    close(*clientfd);
-}
-
 void worker() {
     while(1) {
         pthread_mutex_lock(&lock);
-        int clientfd = dequeue(queue);
+        Node* current = dequeue(queue);
         pthread_mutex_unlock(&lock);
 
-        if(clientfd != -1) {
-            handle_connection(&clientfd);
+        if(current != NULL) {
+            current->handle(current->value);
+            close(*current->value);
+            free(current);
         }
+
     }
 }
 
@@ -242,25 +186,24 @@ UltraServer ultra_init(int port) {
     return server;
 }
 
-void ultra_connect(UltraServer* server, void (*handle)(int *fd)) {
+void ultra_connect(UltraServer* server, void (*handle)(int* fd)) {
     while(1) {
         struct sockaddr_in client;
         socklen_t c = sizeof(client);
 
-        int curr_client = accept(server->sockfd, (struct sockaddr*)&client, &c);
+        int new_client = accept(server->sockfd, (struct sockaddr*)&client, &c);
         
-        if(curr_client == -1) {
+        if(new_client == -1) {
             fprintf(stderr, "ERROR: could not accept the connection\n");
             close(server->sockfd);
             exit(1);
         }
 
         int *clientfd = malloc(sizeof(int));
-        *clientfd = curr_client;
+        *clientfd = new_client;
 
-        //enqueue(queue, clientfd);
-
-        pthread_t thread;
-        pthread_create(&thread, NULL, (void*)handle, (void*)clientfd);
+        pthread_mutex_lock(&lock);
+        enqueue(queue, clientfd, handle);
+        pthread_mutex_unlock(&lock);
     }
 }
