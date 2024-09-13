@@ -1,26 +1,23 @@
 # ULTRA
 
-Create HTTP servers using C
+Library that helps you build HTTP servers in C.
 
-NOTE: This is an experimental library for now.
+This is an experimental library.
 
-### Example
+### Simple Example
 
 ```c
 #include "ultra.h"
-#include <unistd.h>
 
-void handle_connection(int* fd) {
-    if(ultra_current_path(fd, "/")) {
-        ultra_get(fd, "index.html");
+void handle(int* fd) {
+    if(ultra_current(fd, "/")) {
+        ultra_res(fd, "index.html");
     } else {
-        ultra_get(fd, "404.html");
+        ultra_res(fd, "404.html");
     }
-
-    close(*fd);
 }
 
-int main(void) {
+int main() {
     UltraServer server = ultra_init(8080);
     ultra_connect(&server, handle_connection);
     return 0;
