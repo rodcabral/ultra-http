@@ -34,7 +34,7 @@ SOFTWARE.
 pthread_mutex_t lock;
 
 typedef struct Node{
-    int* value;
+    int* fd;
     void(*handle)(int*fd);
     struct Node* next;
 } Node;
@@ -51,9 +51,9 @@ Queue *init_queue() {
     return queue;
 }
 
-void enqueue(Queue* queue, int* value, void (*handle)(int* fd)) {
+void enqueue(Queue* queue, int* fd, void (*handle)(int* fd)) {
     Node* new_node = malloc(sizeof(Node));
-    new_node->value = value;
+    new_node->fd = fd;
     new_node->handle = handle;
     new_node->next = NULL;
 
@@ -122,8 +122,8 @@ void worker() {
         pthread_mutex_unlock(&lock);
 
         if(current_connection != NULL) {
-            current_connection->handle(current_connection->value);
-            close(*current_connection->value);
+            current_connection->handle(current_connection->fd);
+            close(*current_connection->fd);
             free(current_connection);
         }
 
