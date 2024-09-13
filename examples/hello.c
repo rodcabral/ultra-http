@@ -1,18 +1,16 @@
 #include "../src/ultra.h"
 #include <unistd.h>
+#include <stdio.h>
 
-void handle(int* fd) {
-    if(ultra_current_path(fd, "/")) {
-        ultra_get(fd, "./examples/index.html");
-    } else {
-        ultra_get(fd, "./examples/404.html");
-    }
+void handle(int *fd) {
+    printf("Client connected: %d\n", *fd);
 
-    close(*fd);
+    ultra_get(fd, "/");
 }
 
 int main(void) {
     UltraServer server = ultra_init(8080);
     ultra_connect(&server, handle);
+
     return 0;
 }
