@@ -93,7 +93,29 @@ int ultra_current(int* fd, const char* path) {
     return 0;
 }
 
+char* get_extension(const char* file_path) {
+    char* file_extension = malloc(strlen(file_path));
+
+    for(size_t i = 0; i < strlen(file_path); ++i) {
+        file_extension[i] = file_path[i];
+    }
+
+    char* token = strtok(file_extension, ".");
+    char* extension = token;
+    while(token != NULL) {
+        extension = token;
+        token = strtok(NULL, ".");
+    }
+
+    free(file_extension);
+
+    return extension;
+}
+
 int ultra_res(int* fd, const char* file_path) {
+    char* extension = get_extension(file_path);
+    printf("Extension: %s\n", extension);
+
     char* buffer = malloc(sizeof(char) * 10000);
 
     const char *body = "<h1>Hello, World!</h1>";
