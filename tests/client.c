@@ -25,11 +25,10 @@ int main(int argc, char**argv) {
         return -1;
     }
 
-    char buffer[100];
+    char buffer[1000];
 
-    while(recv(sockfd, buffer, 100, 0) > 0) {
-        printf("buffer: %s\n", buffer);
-    }
+    recv(sockfd, buffer, 1000, 0);
+    printf("buffer: %s\n", buffer);
 
     return 0;
 }
