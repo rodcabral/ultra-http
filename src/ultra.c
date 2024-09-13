@@ -89,11 +89,11 @@ Node* dequeue(Queue* queue) {
     return temp;
 }
 
-int ultra_current_path(int* fd, const char* path) {
+int ultra_current(int* fd, const char* path) {
     return 0;
 }
 
-int ultra_get(int* fd, const char* file_path) {
+int ultra_res(int* fd, const char* file_path) {
     char* buffer = malloc(sizeof(char) * 10000);
 
     const char *body = "<h1>Hello, World!</h1>";
@@ -118,13 +118,13 @@ Queue* queue = NULL;
 void worker() {
     while(1) {
         pthread_mutex_lock(&lock);
-        Node* current = dequeue(queue);
+        Node* current_connection = dequeue(queue);
         pthread_mutex_unlock(&lock);
 
-        if(current != NULL) {
-            current->handle(current->value);
-            close(*current->value);
-            free(current);
+        if(current_connection != NULL) {
+            current_connection->handle(current_connection->value);
+            close(*current_connection->value);
+            free(current_connection);
         }
 
     }
