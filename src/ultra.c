@@ -135,7 +135,7 @@ char* get_content_type(char* extension) {
 
     for(int i = 0; i < 3; ++i) {
         if(strncmp(extension, images[i], 50) == 0) {
-            snprintf(content_type, 100, "application/%s", images[i]);
+            snprintf(content_type, 100, "image/%s", images[i]);
             return content_type;
         }
     }
@@ -144,7 +144,7 @@ char* get_content_type(char* extension) {
         content_type = "text/javascript";
     }
 
-    if(strncmp(extension, "text/jpg", 50) == 0) {
+    if(strncmp(extension, "image/jpg", 50) == 0) {
         content_type = "image/jpeg";
     }
 
