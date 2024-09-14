@@ -5,7 +5,7 @@
 void handle(int *fd) {
     printf("Client connected: %d\n", *fd);
 
-    ultra_res(fd, "/");
+    ultra_res(fd, "./examples/index.html");
 }
 
 int main(void) {
