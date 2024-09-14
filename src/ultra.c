@@ -112,24 +112,64 @@ char* get_extension(const char* file_path) {
     return extension;
 }
 
+char* get_content_type(char* extension) {
+    char* content_type = malloc(100);
+
+    char texts[5][50] = {"html", "css", "csv", "xml", "js"};
+    char applications[3][50] = {"json", "pdf", "zip"};
+    char images[3][50] = {"gif", "jpg", "png"};
+
+    for(int i = 0; i < 5; ++i) {
+        if(strncmp(extension, texts[i], 50) == 0) {
+            snprintf(content_type, 100, "text/%s", texts[i]);
+            return content_type;
+        }
+    }
+
+    for(int i = 0; i < 3; ++i) {
+        if(strncmp(extension, applications[i], 50) == 0) {
+            snprintf(content_type, 100, "application/%s", applications[i]);
+            return content_type;
+        }
+    }
+
+    for(int i = 0; i < 3; ++i) {
+        if(strncmp(extension, images[i], 50) == 0) {
+            snprintf(content_type, 100, "application/%s", images[i]);
+            return content_type;
+        }
+    }
+
+    if(strncmp(extension, "text/js", 50) == 0) {
+        content_type = "text/javascript";
+    }
+
+    if(strncmp(extension, "text/jpg", 50) == 0) {
+        content_type = "image/jpeg";
+    }
+
+    return content_type;
+}
+
 int ultra_res(int* fd, const char* file_path) {
     char* extension = get_extension(file_path);
-    printf("Extension: %s\n", extension);
-
+    char* content_type = get_content_type(extension);
+    
     char* buffer = malloc(sizeof(char) * 10000);
 
     const char *body = "<h1>Hello, World!</h1>";
     snprintf(buffer, 10000, 
              "HTTP/1.1 200 OK\r\n"
              "Content-Length: %lu\r\n"
-             "Content-Type: text/html\r\n"
+             "Content-Type: %s\r\n"
              "\r\n"
              "%s",
-             strlen(body), body);
+             strlen(body), content_type, body);
 
     send(*fd, buffer, strlen(buffer), 0);
 
     free(buffer);
+    free(content_type);
 
     return 0;
 }
