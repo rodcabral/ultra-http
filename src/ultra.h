@@ -49,6 +49,6 @@ void ultra_connect(UltraServer* server, void (*handle)(int* fd));
 
 UltraRequest ultra_request(int* fd);
 
-int ultra_res(int* fd, const char* file_path);
+int ultra_send_file(int* fd, const char* file_path);
 
 #endif

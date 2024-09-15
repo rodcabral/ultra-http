@@ -31,6 +31,8 @@ SOFTWARE.
 #include <pthread.h>
 #include <fcntl.h>
 
+#define SIZE 8192
+
 pthread_mutex_t lock;
 
 typedef struct Node{
@@ -92,11 +94,9 @@ Node* dequeue(Queue* queue) {
 UltraRequest ultra_request(int *fd) {
     UltraRequest request;
 
-    const int size = 8192;
+    char* buffer = malloc(sizeof(char) * SIZE);
 
-    char* buffer = malloc(sizeof(char) * size);
-
-    recv(*fd, buffer, size, 0);
+    recv(*fd, buffer, SIZE, 0);
 
     char* token = strtok(buffer, " ");
     request.method = token;
@@ -170,18 +170,21 @@ char* get_content_type(char* extension) {
     return content_type;
 }
 
-int ultra_res(int* fd, const char* file_path) {
+int ultra_send_file(int* fd, const char* file_path) {
     char* extension = get_extension(file_path);
     char* content_type = get_content_type(extension);
     
-    char *file_buffer = malloc(sizeof(char) * 20000);
+    char *file_buffer = malloc(sizeof(char) * SIZE);
     int file = open(file_path, O_RDONLY);
     
-    read(file, file_buffer, 20000);
+    if(read(file, file_buffer, SIZE) < 0) {
+        fprintf(stderr, "ERROR: Could not open file %s\n", file_path);
+        return -1;
+    }
 
-    char* response_buffer = malloc(sizeof(char) * 1000 + strlen(file_buffer));
+    char* response_buffer = malloc(sizeof(char) * SIZE);
 
-    snprintf(response_buffer, 10000, 
+    snprintf(response_buffer, SIZE, 
              "HTTP/1.1 200 OK\r\n"
              "Connection: keep-alive\r\n"
              "Keep-Alive: timeout=5, max=5000\r\n"
