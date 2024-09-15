@@ -89,8 +89,25 @@ Node* dequeue(Queue* queue) {
     return temp;
 }
 
-int ultra_current(int* fd, const char* path) {
-    return 0;
+UltraRequest ultra_request(int *fd) {
+    UltraRequest request;
+
+    const int size = 8192;
+
+    char* buffer = malloc(sizeof(char) * size);
+
+    recv(*fd, buffer, size, 0);
+
+    char* token = strtok(buffer, " ");
+    request.method = token;
+    if(token) {
+        token = strtok(NULL, " ");
+        request.path = token;
+    }
+
+    free(buffer);
+
+    return request;
 }
 
 char* get_extension(const char* file_path) {
@@ -166,6 +183,8 @@ int ultra_res(int* fd, const char* file_path) {
 
     snprintf(response_buffer, 10000, 
              "HTTP/1.1 200 OK\r\n"
+             "Connection: keep-alive\r\n"
+             "Keep-Alive: timeout=5, max=5000\r\n"
              "Content-Length: %lu\r\n"
              "Content-Type: %s\r\n"
              "\r\n"

@@ -38,11 +38,16 @@ typedef struct {
     struct sockaddr_in *addr;
 } UltraServer;
 
+typedef struct {
+    char* method;
+    char* path;
+} UltraRequest;
+
 UltraServer ultra_init(int port);
 
 void ultra_connect(UltraServer* server, void (*handle)(int* fd));
 
-int ultra_current(int* fd, const char* path);
+UltraRequest ultra_request(int* fd);
 
 int ultra_res(int* fd, const char* file_path);
 
