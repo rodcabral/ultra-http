@@ -1,11 +1,18 @@
 #include "../src/ultra.h"
-#include <unistd.h>
 #include <stdio.h>
+#include <string.h>
 
 void handle(int *fd) {
-    printf("Client connected: %d\n", *fd);
+    printf("Connected: %d\n", *fd);
+    UltraRequest request = ultra_request(fd);
 
-    ultra_res(fd, "./examples/index.html");
+    if(strncmp(request.path, "/", 255) == 0) {
+        ultra_send_file(fd, "./examples/index.html");
+    } else if(strncmp(request.path, "/something", 255) == 0) {
+        ultra_send_file(fd, "./examples/something.html");
+    } else {
+        ultra_send_file(fd, "./examples/404.html");
+    }
 }
 
 int main(void) {
