@@ -43,12 +43,20 @@ typedef struct {
     char* path;
 } UltraRequest;
 
+typedef struct {
+    int *fd;
+    int status_code;
+    char* response;
+} UltraResponse;
+
 UltraServer ultra_init(int port);
 
 void ultra_connect(UltraServer* server, void (*handle)(int* fd));
 
 UltraRequest ultra_request(int* fd);
 
-int ultra_send_file(int* fd, const char* file_path);
+UltraResponse ultra_response(int* fd);
+
+int ultra_send_file(UltraResponse *response, const char* file_path);
 
 #endif

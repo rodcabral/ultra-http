@@ -110,6 +110,16 @@ UltraRequest ultra_request(int *fd) {
     return request;
 }
 
+UltraResponse ultra_response(int *fd) {
+    UltraResponse response;
+
+    response.fd = fd;
+    response.status_code = 200;
+    response.response = malloc(sizeof(char) * SIZE);
+
+    return response;
+}
+
 char* get_extension(const char* file_path) {
     char* file_extension = malloc(strlen(file_path));
 
@@ -130,7 +140,7 @@ char* get_extension(const char* file_path) {
 }
 
 char* get_content_type(char* extension) {
-    char* content_type = malloc(100);
+    char* content_type = malloc(sizeof(char) * 100);
 
     if(strncmp(extension, "js", 50) == 0) {
         content_type = "text/javascript";
@@ -170,7 +180,7 @@ char* get_content_type(char* extension) {
     return content_type;
 }
 
-int ultra_send_file(int* fd, const char* file_path) {
+int ultra_send_file(UltraResponse* response, const char* file_path) {
     char* extension = get_extension(file_path);
     char* content_type = get_content_type(extension);
     
@@ -182,21 +192,21 @@ int ultra_send_file(int* fd, const char* file_path) {
         return -1;
     }
 
-    char* response_buffer = malloc(sizeof(char) * SIZE);
-
-    snprintf(response_buffer, SIZE, 
-             "HTTP/1.1 200 OK\r\n"
+    snprintf(response->response, SIZE, 
+             "HTTP/1.1 %d OK\r\n"
              "Connection: keep-alive\r\n"
              "Keep-Alive: timeout=5, max=5000\r\n"
              "Content-Length: %lu\r\n"
              "Content-Type: %s\r\n"
              "\r\n"
              "%s",
-             strlen(file_buffer), content_type, file_buffer);
+             response->status_code, 
+             strlen(file_buffer), 
+             content_type, file_buffer);
 
-    send(*fd, response_buffer, strlen(response_buffer), 0);
+    send(*response->fd, response->response, strlen(response->response), 0);
 
-    free(response_buffer);
+    free(response->response);
     free(file_buffer);
     free(content_type);
 
@@ -246,7 +256,7 @@ UltraServer ultra_init(int port) {
     pthread_mutex_init(&lock, NULL);
 
     queue = init_queue();
-    tpool = create_tpool(20);
+    tpool = create_tpool(30);
     
     if(server.sockfd == -1) {
         fprintf(stderr, "ERROR: could not create the socket\n");
