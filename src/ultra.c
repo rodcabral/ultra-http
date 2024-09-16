@@ -91,18 +91,22 @@ Node* dequeue(Queue* queue) {
     return temp;
 }
 
-UltraRequest ultra_request(int *fd) {
-    UltraRequest request;
+UltraRequest* ultra_request(int *fd) {
+    UltraRequest *request = malloc(sizeof(UltraRequest));
 
     char* buffer = malloc(sizeof(char) * SIZE);
 
     recv(*fd, buffer, SIZE, 0);
 
     char* token = strtok(buffer, " ");
-    request.method = token;
+    request->method = malloc(sizeof(char) * 255);
+    strncpy(request->method, token, 255);
     if(token) {
         token = strtok(NULL, " ");
-        request.path = token;
+        request->path = "/";
+
+        request->path = malloc(sizeof(char) * 255);
+        strncpy(request->path, token, 255);
     }
 
     free(buffer);
@@ -110,12 +114,12 @@ UltraRequest ultra_request(int *fd) {
     return request;
 }
 
-UltraResponse ultra_response(int *fd) {
-    UltraResponse response;
+UltraResponse *ultra_response(int *fd) {
+    UltraResponse *response = malloc(sizeof(UltraResponse));
 
-    response.fd = fd;
-    response.status_code = 200;
-    response.response = malloc(sizeof(char) * SIZE);
+    response->fd = fd;
+    response->status_code = 200;
+    response->response = malloc(sizeof(char) * SIZE);
 
     return response;
 }
@@ -204,7 +208,9 @@ int ultra_send_file(UltraResponse* response, const char* file_path) {
              strlen(file_buffer), 
              content_type, file_buffer);
 
+    pthread_mutex_lock(&lock);
     send(*response->fd, response->response, strlen(response->response), 0);
+    pthread_mutex_unlock(&lock);
 
     free(response->response);
     free(file_buffer);
@@ -229,7 +235,6 @@ void worker() {
             close(*current_connection->fd);
             free(current_connection);
         }
-
     }
 }
 

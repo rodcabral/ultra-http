@@ -53,9 +53,9 @@ UltraServer ultra_init(int port);
 
 void ultra_connect(UltraServer* server, void (*handle)(int* fd));
 
-UltraRequest ultra_request(int* fd);
+UltraRequest *ultra_request(int* fd);
 
-UltraResponse ultra_response(int* fd);
+UltraResponse *ultra_response(int* fd);
 
 int ultra_send_file(UltraResponse *response, const char* file_path);
 
