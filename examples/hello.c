@@ -4,6 +4,7 @@
 
 void handle(int *fd) {
     printf("Connected: %d\n", *fd);
+
     UltraRequest *request = ultra_request(fd);
     UltraResponse *response = ultra_response(fd);
 
@@ -15,6 +16,8 @@ void handle(int *fd) {
         response->status_code = 404;
         ultra_send_file(response, "./examples/404.html");
     }
+
+    ultra_close(request, response);
 }
 
 int main(void) {
