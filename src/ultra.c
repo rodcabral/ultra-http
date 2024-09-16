@@ -93,24 +93,33 @@ Node* dequeue(Queue* queue) {
 
 UltraRequest* ultra_request(int *fd) {
     UltraRequest *request = malloc(sizeof(UltraRequest));
+    request->method = malloc(sizeof(char) * 255);
+    request->path = malloc(sizeof(char) * 255);
 
     char* buffer = malloc(sizeof(char) * SIZE);
 
     recv(*fd, buffer, SIZE, 0);
 
     char* token = strtok(buffer, " ");
-    request->method = malloc(sizeof(char) * 255);
-    strncpy(request->method, token, 255);
+    
     if(token) {
-        token = strtok(NULL, " ");
-        request->path = "/";
-
-        request->path = malloc(sizeof(char) * 255);
-        strncpy(request->path, token, 255);
+        strncpy(request->method, token, 255);
     }
 
-    free(buffer);
+    if(token) {
+        token = strtok(NULL, " ");
+        if(token) {
+            strncpy(request->path, token, 255);
+        } else {
+            strncpy(request->path, "/", 255);
+        }
+    }
 
+    if(buffer) {
+        free(buffer);
+        buffer = NULL;
+    }
+    
     return request;
 }
 
@@ -208,14 +217,10 @@ int ultra_send_file(UltraResponse* response, const char* file_path) {
              strlen(file_buffer), 
              content_type, file_buffer);
 
-    pthread_mutex_lock(&lock);
     send(*response->fd, response->response, strlen(response->response), 0);
-    pthread_mutex_unlock(&lock);
 
-    free(response->response);
     free(file_buffer);
     free(content_type);
-
     close(file);
 
     return 0;
@@ -313,5 +318,21 @@ void ultra_connect(UltraServer* server, void (*handle)(int* fd)) {
         pthread_mutex_lock(&lock);
         enqueue(queue, clientfd, handle);
         pthread_mutex_unlock(&lock);
+    }
+}
+
+void ultra_close(UltraRequest* request, UltraResponse* response) {
+    if(request) {
+        free(request->method);
+        request->method = NULL;
+        free(request->path);
+        request->path = NULL;
+    }
+
+    if(response) {
+        free(response->response);
+        response->response = NULL;
+
+        free(response);
     }
 }

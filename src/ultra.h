@@ -59,4 +59,6 @@ UltraResponse *ultra_response(int* fd);
 
 int ultra_send_file(UltraResponse *response, const char* file_path);
 
+void ultra_close(UltraRequest* request, UltraResponse* response);
+
 #endif
