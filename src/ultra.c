@@ -97,12 +97,14 @@ char* get_mime(char* path) {
     char* extension = strtok(path, ".");
     extension = strtok(NULL, ".");
 
-    if(strncmp(extension, "html", 255) == 0) {
-        mime =  "text/html";
-    }
+    if(extension != NULL) {
+        if(strncmp(extension, "html", 255) == 0) {
+            mime =  "text/html";
+        }
 
-    if(strncmp(extension, "css", 255) == 0) {
-        mime = "text/css";
+        if(strncmp(extension, "css", 255) == 0) {
+            mime = "text/css";
+        }
     }
 
     return mime;
@@ -117,56 +119,63 @@ UltraRequest* ultra_request(int *fd) {
     char *content = malloc(sizeof(char) * SIZE);
     char* response = malloc(sizeof(char) * SIZE);
 
-    recv(*fd, buffer, SIZE, 0);
+    int bytes_recv = recv(*fd, buffer, SIZE, 0);
 
-    sscanf(buffer, "%s %s", request->method, request->path);
+    if(bytes_recv > 0) {
+        sscanf(buffer, "%s %s", request->method, request->path);
 
-    if(strncmp(request->path, "/", 255) == 0) {
-        strncpy(request->path, "/index.html", 255);
-    }
+        if(strncmp(request->path, "/", 255) == 0) {
+            strncpy(request->path, "/index.html", 255);
+        }
 
-    int file = open(request->path+1, O_RDONLY);
-    int bytes = read(file, content, SIZE);
-    
-    char* not_found = "<body>404 Not Found</body>";
-    if(bytes == -1) {
+        int file = open(request->path+1, O_RDONLY);
+        int bytes = read(file, content, SIZE);
+
+        char* not_found = "<body>404 Not Found</body>";
+        if(bytes == -1) {
+            snprintf(response, SIZE,
+                     "HTTP/1.1 404 Not Found\r\n"
+                     "Content-Length: %lu\r\n"
+                     "Content-Type: text/html\r\n"
+                     "\r\n"
+                     "%s",
+                     strlen(not_found), 
+                     not_found);
+
+
+            send(*fd, response, strlen(response), 0);
+
+            close(file);
+            free(buffer);
+            free(response);
+            free(content);
+            return request;
+        }
+
+        char* mime_type = get_mime(request->path+1);
+        
+        if(!mime_type) {
+            mime_type = "text/html";
+        }
+
         snprintf(response, SIZE,
-                 "HTTP/1.1 404 Not Found\r\n"
+                 "HTTP/1.1 200 OK\r\n"
                  "Content-Length: %lu\r\n"
-                 "Content-Type: text/html\r\n"
+                 "Content-Type: %s\r\n"
                  "\r\n"
                  "%s",
-                 strlen(not_found), 
-                 not_found);
-
+                 strlen(content),
+                 mime_type,
+                 content);
 
         send(*fd, response, strlen(response), 0);
 
         close(file);
-        free(buffer);
-        free(response);
-        free(content);
-        return request;
     }
 
-    char* mime_type = get_mime(request->path+1);
-    snprintf(response, SIZE,
-             "HTTP/1.1 200 OK\r\n"
-             "Content-Length: %lu\r\n"
-             "Content-Type: %s\r\n"
-             "\r\n"
-             "%s",
-             strlen(content),
-             mime_type,
-             content);
-
-    send(*fd, response, strlen(response), 0);
-
-    close(file);
     free(buffer);
     free(response);
     free(content);
-
     return request;
 }
 
