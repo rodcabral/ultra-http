@@ -91,35 +91,82 @@ Node* dequeue(Queue* queue) {
     return temp;
 }
 
-UltraRequest* ultra_request(int *fd) {
-    UltraRequest *request = malloc(sizeof(UltraRequest));
-    request->method = malloc(sizeof(char) * 255);
-    request->path = malloc(sizeof(char) * 255);
+char* get_mime(char* path) {
+    char* mime = NULL;
 
-    char* buffer = malloc(sizeof(char) * SIZE);
+    char* extension = strtok(path, ".");
+    extension = strtok(NULL, ".");
+
+    if(strncmp(extension, "html", 255) == 0) {
+        mime =  "text/html";
+    }
+
+    if(strncmp(extension, "css", 255) == 0) {
+        mime = "text/css";
+    }
+
+    return mime;
+}
+
+UltraRequest* ultra_request(int *fd) {
+    UltraRequest* request = malloc(sizeof(UltraRequest));
+    request->path = malloc(sizeof(char) * 255);
+    request->method = malloc(sizeof(char) * 255);
+
+    char *buffer = malloc(sizeof(char) * SIZE);
+    char *content = malloc(sizeof(char) * SIZE);
+    char* response = malloc(sizeof(char) * SIZE);
 
     recv(*fd, buffer, SIZE, 0);
 
-    char* token = strtok(buffer, " ");
+    sscanf(buffer, "%s %s", request->method, request->path);
+
+    if(strncmp(request->path, "/", 255) == 0) {
+        strncpy(request->path, "/index.html", 255);
+    }
+
+    int file = open(request->path+1, O_RDONLY);
+    int bytes = read(file, content, SIZE);
     
-    if(token) {
-        strncpy(request->method, token, 255);
-    }
+    char* not_found = "<body>404 Not Found</body>";
+    if(bytes == -1) {
+        snprintf(response, SIZE,
+                 "HTTP/1.1 404 Not Found\r\n"
+                 "Content-Length: %lu\r\n"
+                 "Content-Type: text/html\r\n"
+                 "\r\n"
+                 "%s",
+                 strlen(not_found), 
+                 not_found);
 
-    if(token) {
-        token = strtok(NULL, " ");
-        if(token) {
-            strncpy(request->path, token, 255);
-        } else {
-            strncpy(request->path, "/", 255);
-        }
-    }
 
-    if(buffer) {
+        send(*fd, response, strlen(response), 0);
+
+        close(file);
         free(buffer);
-        buffer = NULL;
+        free(response);
+        free(content);
+        return request;
     }
-    
+
+    char* mime_type = get_mime(request->path+1);
+    snprintf(response, SIZE,
+             "HTTP/1.1 200 OK\r\n"
+             "Content-Length: %lu\r\n"
+             "Content-Type: %s\r\n"
+             "\r\n"
+             "%s",
+             strlen(content),
+             mime_type,
+             content);
+
+    send(*fd, response, strlen(response), 0);
+
+    close(file);
+    free(buffer);
+    free(response);
+    free(content);
+
     return request;
 }
 
@@ -131,99 +178,6 @@ UltraResponse *ultra_response(int *fd) {
     response->response = malloc(sizeof(char) * SIZE);
 
     return response;
-}
-
-char* get_extension(const char* file_path) {
-    char* file_extension = malloc(strlen(file_path));
-
-    for(size_t i = 0; i < strlen(file_path); ++i) {
-        file_extension[i] = file_path[i];
-    }
-
-    char* token = strtok(file_extension, ".");
-    char* extension = token;
-    while(token != NULL) {
-        extension = token;
-        token = strtok(NULL, ".");
-    }
-
-    free(file_extension);
-
-    return extension;
-}
-
-char* get_content_type(char* extension) {
-    char* content_type = malloc(sizeof(char) * 100);
-
-    if(strncmp(extension, "js", 50) == 0) {
-        content_type = "text/javascript";
-        return content_type;
-    }
-
-    if(strncmp(extension, "jpg", 50) == 0) {
-        content_type = "image/jpeg";
-        return content_type;
-    }
-
-    char texts[5][50] = {"html", "css", "csv", "xml", "js"};
-    char applications[3][50] = {"json", "pdf", "zip"};
-    char images[3][50] = {"gif", "jpg", "png"};
-
-    for(int i = 0; i < 5; ++i) {
-        if(strncmp(extension, texts[i], 50) == 0) {
-            snprintf(content_type, 100, "text/%s", texts[i]);
-            return content_type;
-        }
-    }
-
-    for(int i = 0; i < 3; ++i) {
-        if(strncmp(extension, applications[i], 50) == 0) {
-            snprintf(content_type, 100, "application/%s", applications[i]);
-            return content_type;
-        }
-    }
-
-    for(int i = 0; i < 3; ++i) {
-        if(strncmp(extension, images[i], 50) == 0) {
-            snprintf(content_type, 100, "image/%s", images[i]);
-            return content_type;
-        }
-    }
-
-    return content_type;
-}
-
-int ultra_send_file(UltraResponse* response, const char* file_path) {
-    char* extension = get_extension(file_path);
-    char* content_type = get_content_type(extension);
-    
-    char *file_buffer = malloc(sizeof(char) * SIZE);
-    int file = open(file_path, O_RDONLY);
-    
-    if(read(file, file_buffer, SIZE) < 0) {
-        fprintf(stderr, "ERROR: Could not open file %s\n", file_path);
-        return -1;
-    }
-
-    snprintf(response->response, SIZE, 
-             "HTTP/1.1 %d OK\r\n"
-             "Connection: keep-alive\r\n"
-             "Keep-Alive: timeout=5, max=5000\r\n"
-             "Content-Length: %lu\r\n"
-             "Content-Type: %s\r\n"
-             "\r\n"
-             "%s",
-             response->status_code, 
-             strlen(file_buffer), 
-             content_type, file_buffer);
-
-    send(*response->fd, response->response, strlen(response->response), 0);
-
-    free(file_buffer);
-    free(content_type);
-    close(file);
-
-    return 0;
 }
 
 tpool_t tpool;
@@ -238,6 +192,7 @@ void worker() {
         if(current_connection != NULL) {
             current_connection->handle(current_connection->fd);
             close(*current_connection->fd);
+            free(current_connection->fd);
             free(current_connection);
         }
     }
@@ -327,6 +282,8 @@ void ultra_close(UltraRequest* request, UltraResponse* response) {
         request->method = NULL;
         free(request->path);
         request->path = NULL;
+
+        free(request);
     }
 
     if(response) {
