@@ -108,14 +108,36 @@ char* get_mime(char* path) {
             return "text/javascript";
         }
 
-        
+
+
+        if(strncmp(extension, "xml", 20) == 0) {
+            return "application/xml";
+        }
+         
         if(strncmp(extension, "pdf", 20) == 0) {
             return "application/pdf";
         }
-
         
         if(strncmp(extension, "json", 20) == 0) {
             return "application/json";
+        }
+
+
+
+        if(strncmp(extension, "png", 20) == 0) {
+            return "image/png";
+        }
+
+        if(strncmp(extension, "jpg", 20) == 0 || strncmp(extension, "jpeg", 20) == 0) {
+            return "image/jpeg";
+        }
+
+        if(strncmp(extension, "gif", 20) == 0) {
+            return "image/gif";
+        }
+
+        if(strncmp(extension, "webp", 20) == 0) {
+            return "image/webp";
         }
     }
 
