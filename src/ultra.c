@@ -31,7 +31,7 @@ SOFTWARE.
 #include <pthread.h>
 #include <fcntl.h>
 
-#define SIZE 8192
+#define SIZE 1000000
 
 pthread_mutex_t lock;
 
@@ -92,22 +92,34 @@ Node* dequeue(Queue* queue) {
 }
 
 char* get_mime(char* path) {
-    char* mime = NULL;
-
     char* extension = strtok(path, ".");
     extension = strtok(NULL, ".");
 
     if(extension != NULL) {
-        if(strncmp(extension, "html", 255) == 0) {
-            mime =  "text/html";
+        if(strncmp(extension, "html", 20) == 0) {
+            return "text/html";
+        }
+        
+        if(strncmp(extension, "css", 20) == 0) {
+            return "text/css";
         }
 
-        if(strncmp(extension, "css", 255) == 0) {
-            mime = "text/css";
+        if(strncmp(extension, "js", 20) == 0) {
+            return "text/javascript";
+        }
+
+        
+        if(strncmp(extension, "pdf", 20) == 0) {
+            return "application/pdf";
+        }
+
+        
+        if(strncmp(extension, "json", 20) == 0) {
+            return "application/json";
         }
     }
 
-    return mime;
+    return "text/plain";
 }
 
 UltraRequest* ultra_request(int *fd) {
@@ -143,7 +155,11 @@ UltraRequest* ultra_request(int *fd) {
                      not_found);
 
 
-            send(*fd, response, strlen(response), 0);
+            int bytes_sent = send(*fd, response, strlen(response), 0);
+
+            if(bytes_sent == -1) {
+                fprintf(stderr, "ERROR: unable to send all bytes (tried to send error 404)\n");
+            }
 
             close(file);
             free(buffer);
@@ -153,10 +169,6 @@ UltraRequest* ultra_request(int *fd) {
         }
 
         char* mime_type = get_mime(request->path+1);
-        
-        if(!mime_type) {
-            mime_type = "text/html";
-        }
 
         snprintf(response, SIZE,
                  "HTTP/1.1 200 OK\r\n"
@@ -168,7 +180,11 @@ UltraRequest* ultra_request(int *fd) {
                  mime_type,
                  content);
 
-        send(*fd, response, strlen(response), 0);
+        int bytes_sent = send(*fd, response, strlen(response), 0);
+
+        if(bytes_sent == -1) {
+            fprintf(stderr, "ERROR: unable to send all bytes (tried to send a file)\n");
+        }
 
         close(file);
     }
@@ -230,7 +246,7 @@ UltraServer ultra_init(int port) {
     pthread_mutex_init(&lock, NULL);
 
     queue = init_queue();
-    tpool = create_tpool(30);
+    tpool = create_tpool(100);
     
     if(server.sockfd == -1) {
         fprintf(stderr, "ERROR: could not create the socket\n");
