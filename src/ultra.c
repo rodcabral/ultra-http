@@ -92,7 +92,9 @@ Node* dequeue(Queue* queue) {
 }
 
 char* get_mime(char* path) {
-    char* extension = strtok(path, ".");
+    char _path[255];
+    strncpy(_path, path, 255);
+    char* extension = strtok(_path, ".");
     extension = strtok(NULL, ".");
 
     if(extension != NULL) {
@@ -151,7 +153,7 @@ UltraRequest* ultra_request(int *fd) {
 
     char *buffer = malloc(sizeof(char) * SIZE);
     char *content = malloc(sizeof(char) * SIZE);
-    char* response = malloc(sizeof(char) * SIZE);
+    char* response = malloc(sizeof(char) * 1024);
 
     int bytes_recv = recv(*fd, buffer, SIZE, 0);
 
@@ -167,7 +169,7 @@ UltraRequest* ultra_request(int *fd) {
 
         char* not_found = "<body>404 Not Found</body>";
         if(bytes == -1) {
-            snprintf(response, SIZE,
+            snprintf(response, 1024,
                      "HTTP/1.1 404 Not Found\r\n"
                      "Content-Length: %lu\r\n"
                      "Content-Type: text/html\r\n"
@@ -175,7 +177,6 @@ UltraRequest* ultra_request(int *fd) {
                      "%s",
                      strlen(not_found), 
                      not_found);
-
 
             int bytes_sent = send(*fd, response, strlen(response), 0);
 
@@ -192,22 +193,27 @@ UltraRequest* ultra_request(int *fd) {
 
         char* mime_type = get_mime(request->path+1);
 
-        snprintf(response, SIZE,
+        snprintf(response, 1024,
                  "HTTP/1.1 200 OK\r\n"
-                 "Content-Length: %lu\r\n"
+                 "Content-Length: %d\r\n"
                  "Content-Type: %s\r\n"
-                 "\r\n"
-                 "%s",
-                 strlen(content),
-                 mime_type,
-                 content);
+                 "\r\n",
+                 bytes,
+                 mime_type);
 
-        int bytes_sent = send(*fd, response, strlen(response), 0);
+        char* response_content = malloc(sizeof(char) * SIZE);
 
-        if(bytes_sent == -1) {
-            fprintf(stderr, "ERROR: unable to send all bytes (tried to send a file)\n");
+        memcpy(response_content, response, strlen(response));
+
+        memcpy(response_content+strlen(response), content, bytes);
+
+        int http_bytes_sent = send(*fd, response_content, strlen(response) + bytes, 0);
+
+        if(http_bytes_sent == -1) {
+            fprintf(stderr, "ERROR: unable to send all bytes (tried to send http response)\n");
         }
 
+        free(response_content);
         close(file);
     }
 
