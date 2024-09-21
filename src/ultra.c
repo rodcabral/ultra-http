@@ -92,9 +92,7 @@ Node* dequeue(Queue* queue) {
 }
 
 char* get_mime(char* path) {
-    char _path[255];
-    strncpy(_path, path, 255);
-    char* extension = strtok(_path, ".");
+    char* extension = strtok(path, ".");
     extension = strtok(NULL, ".");
 
     if(extension != NULL) {
@@ -188,7 +186,10 @@ UltraRequest* ultra_request(int *fd) {
             return request;
         }
 
+        char original_path[255];
+        strncpy(original_path, request->path, 255);
         char* mime_type = get_mime(request->path+1);
+        strncpy(request->path, original_path, 255);
 
         snprintf(response, 1024,
                  "HTTP/1.1 200 OK\r\n"
