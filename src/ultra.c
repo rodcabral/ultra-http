@@ -151,9 +151,9 @@ UltraRequest* ultra_request(int *fd) {
     request->path = malloc(sizeof(char) * 255);
     request->method = malloc(sizeof(char) * 255);
 
-    char *buffer = malloc(sizeof(char) * SIZE);
-    char *content = malloc(sizeof(char) * SIZE);
-    char* response = malloc(sizeof(char) * 1024);
+    char buffer[SIZE];
+    char content[SIZE];
+    char response[1024];
 
     int bytes_recv = recv(*fd, buffer, SIZE, 0);
 
@@ -185,9 +185,6 @@ UltraRequest* ultra_request(int *fd) {
             }
 
             close(file);
-            free(buffer);
-            free(response);
-            free(content);
             return request;
         }
 
@@ -201,7 +198,7 @@ UltraRequest* ultra_request(int *fd) {
                  bytes,
                  mime_type);
 
-        char* response_content = malloc(sizeof(char) * SIZE);
+        char response_content[SIZE];
 
         memcpy(response_content, response, strlen(response));
 
@@ -213,13 +210,9 @@ UltraRequest* ultra_request(int *fd) {
             fprintf(stderr, "ERROR: unable to send all bytes (tried to send http response)\n");
         }
 
-        free(response_content);
         close(file);
     }
 
-    free(buffer);
-    free(response);
-    free(content);
     return request;
 }
 
@@ -333,10 +326,12 @@ void ultra_close(UltraRequest* request, UltraResponse* response) {
     if(request) {
         free(request->method);
         request->method = NULL;
+
         free(request->path);
         request->path = NULL;
-
+        
         free(request);
+        request = NULL;
     }
 
     if(response) {
@@ -344,5 +339,6 @@ void ultra_close(UltraRequest* request, UltraResponse* response) {
         response->response = NULL;
 
         free(response);
+        response = NULL;
     }
 }
