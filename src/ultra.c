@@ -43,6 +43,7 @@ typedef struct Node{
 
 typedef struct Queue {
     Node* head;
+    Node* tail;
 } Queue;
 
 Queue *init_queue() {
@@ -61,19 +62,12 @@ void enqueue(Queue* queue, int* fd, void (*handle)(int* fd)) {
 
     if(!queue->head) {
         queue->head = new_node;
+        queue->tail = new_node;
         return;
     }
 
-    Node* temp = queue->head;
-
-    while(temp) {
-        if(temp->next == NULL) {
-            temp->next = new_node;
-            return;
-        }
-
-        temp = temp->next;
-    }
+    queue->tail->next = new_node;
+    queue->tail = new_node;
 }
 
 Node* dequeue(Queue* queue) {
