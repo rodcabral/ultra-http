@@ -5,7 +5,7 @@ void handle(int *fd) {
     printf("Connected: %d\n", *fd);
 
     UltraRequest *request = ultra_request(fd);
-    UltraResponse *response = ultra_response(fd);
+    UltraResponse *response = ultra_response(fd, request);
     
     ultra_close(request, response);
 }
