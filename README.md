@@ -11,7 +11,7 @@ This is an experimental library.
 
 void handle(int *fd) {
     UltraRequest* request = ultra_request(fd);
-    UltraResponse* response = ultra_response(fd);
+    UltraResponse* response = ultra_response(fd, request);
 
     ultra_close(request, response);
 }
@@ -19,6 +19,5 @@ void handle(int *fd) {
 int main() {
     UltraServer server = ultra_init(8080);
     ultra_connect(&server, handle);
-    return 0;
 }
 ```
