@@ -1,5 +1,6 @@
 ultra
-example
+hello
+json
 *.o
 *.out
 build
