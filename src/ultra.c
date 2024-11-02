@@ -30,10 +30,13 @@ SOFTWARE.
 #include <unistd.h>
 #include <pthread.h>
 #include <fcntl.h>
+#include <stdbool.h>
 
 #define SIZE 1000000
 
 pthread_mutex_t lock;
+
+bool using_json = false;
 
 typedef struct Node{
     int* fd;
@@ -138,24 +141,35 @@ char* get_mime(char* path) {
     return "text/plain";
 }
 
+void use_json() {
+    using_json = true;
+}
+
 UltraRequest* ultra_request(int *fd) {
     UltraRequest* request = malloc(sizeof(UltraRequest));
     request->path = malloc(sizeof(char) * 255);
     request->method = malloc(sizeof(char) * 255);
 
     char buffer[SIZE];
-    char content[SIZE];
-    char response[1024];
 
-    int bytes_recv = recv(*fd, buffer, SIZE, 0);
+    recv(*fd, buffer, SIZE, 0);
+    sscanf(buffer, "%s %s", request->method, request->path);
 
-    if(bytes_recv > 0) {
-        sscanf(buffer, "%s %s", request->method, request->path);
-
+    if(!using_json) {
         if(strncmp(request->path, "/", 255) == 0) {
             strncpy(request->path, "/index.html", 255);
         }
+    }
 
+    return request;
+}
+
+UltraResponse *ultra_response(int* fd, UltraRequest* request) {
+    UltraResponse *ultra_response = malloc(sizeof(UltraResponse));
+    
+    if(!using_json) {
+        char content[SIZE];
+        char response[1024];
         int file = open(request->path+1, O_RDONLY);
         int bytes = read(file, content, SIZE);
 
@@ -177,13 +191,10 @@ UltraRequest* ultra_request(int *fd) {
             }
 
             close(file);
-            return request;
+            return ultra_response;
         }
 
-        char original_path[255];
-        strncpy(original_path, request->path, 255);
         char* mime_type = get_mime(request->path+1);
-        strncpy(request->path, original_path, 255);
 
         snprintf(response, 1024,
                  "HTTP/1.1 200 OK\r\n"
@@ -202,23 +213,14 @@ UltraRequest* ultra_request(int *fd) {
         int http_bytes_sent = send(*fd, response_content, strlen(response) + bytes, 0);
 
         if(http_bytes_sent == -1) {
-            fprintf(stderr, "ERROR: unable to send all bytes (tried to send http response)\n");
+            fprintf(stderr, "ERROR: unable to send all bytes\n");
         }
 
         close(file);
+        return ultra_response;
     }
 
-    return request;
-}
-
-UltraResponse *ultra_response(int *fd) {
-    UltraResponse *response = malloc(sizeof(UltraResponse));
-
-    response->fd = fd;
-    response->status_code = 200;
-    response->response = malloc(sizeof(char) * SIZE);
-
-    return response;
+    return ultra_response;
 }
 
 tpool_t tpool;
@@ -330,9 +332,6 @@ void ultra_close(UltraRequest* request, UltraResponse* response) {
     }
 
     if(response) {
-        free(response->response);
-        response->response = NULL;
-
         free(response);
         response = NULL;
     }

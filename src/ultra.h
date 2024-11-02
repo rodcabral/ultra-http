@@ -44,7 +44,6 @@ typedef struct {
 } UltraRequest;
 
 typedef struct {
-    int *fd;
     int status_code;
     char* response;
 } UltraResponse;
@@ -53,9 +52,11 @@ UltraServer ultra_init(int port);
 
 void ultra_connect(UltraServer* server, void (*handle)(int* fd));
 
+void use_json();
+
 UltraRequest *ultra_request(int* fd);
 
-UltraResponse *ultra_response(int* fd);
+UltraResponse *ultra_response(int* fd, UltraRequest* request);
 
 void ultra_close(UltraRequest* request, UltraResponse* response);
 
