@@ -336,3 +336,57 @@ void ultra_close(UltraRequest* request, UltraResponse* response) {
         response = NULL;
     }
 }
+
+const char* ultra_status(uint16_t number) {
+    switch(number) {
+        case 100:
+            return "Continue";
+        case 200:
+            return "OK";
+        case 201:
+            return "Created";
+        case 202:
+            return "Accepted";
+        case 203:
+            return "Non-Authoritative Information";
+        case 204:
+            return "No content";
+        case 300:
+            return "Multiple Choices";
+        case 301:
+            return "Moved Permanently";
+        case 304:
+            return "Not Modified";
+        case 400:
+            return "Bad Request";
+        case 401:
+            return "Unauthorized";
+        case 402:
+            return "Payment Required";
+        case 403:
+            return "Forbidden";
+        case 404:
+            return "Not Found";
+    }
+
+    return "OK";
+}
+
+void ultra_send(int* fd, UltraResponse* response, const char* message) {
+    size_t length = strlen(message);
+
+    char buffer[SIZE];
+
+    snprintf(buffer, SIZE, 
+             "HTTP/1.1 %d %s\r\n"
+             "Content-Length: %lu\r\n"
+             "Content-Type: text/html\r\n"
+             "\r\n"
+             "%s", 
+             response->status, 
+             ultra_status(response->status),
+             length,
+             message);
+
+    send(*fd, buffer, strlen(buffer), 0);
+}

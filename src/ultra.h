@@ -44,7 +44,7 @@ typedef struct {
 } UltraRequest;
 
 typedef struct {
-    int status_code;
+    int status;
     char* response;
 } UltraResponse;
 
@@ -59,5 +59,9 @@ UltraRequest *ultra_request(int* fd);
 UltraResponse *ultra_response(int* fd, UltraRequest* request);
 
 void ultra_close(UltraRequest* request, UltraResponse* response);
+
+const char* ultra_status(uint16_t number);
+
+void ultra_send(int* fd, UltraResponse* response, const char* message);
 
 #endif
