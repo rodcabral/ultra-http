@@ -46,6 +46,7 @@ typedef struct {
 typedef struct {
     int status;
     char* response;
+    int* fd;
 } UltraResponse;
 
 UltraServer ultra_init(int port);
@@ -62,6 +63,6 @@ void ultra_close(UltraRequest* request, UltraResponse* response);
 
 const char* ultra_status(uint16_t number);
 
-void ultra_send(int* fd, UltraResponse* response, const char* message);
+void ultra_send(UltraResponse* response, const char* message);
 
 #endif

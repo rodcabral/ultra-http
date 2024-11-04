@@ -166,6 +166,9 @@ UltraRequest* ultra_request(int *fd) {
 
 UltraResponse *ultra_response(int* fd, UltraRequest* request) {
     UltraResponse *ultra_response = malloc(sizeof(UltraResponse));
+
+    ultra_response->fd = malloc(sizeof(int));
+    *ultra_response->fd = *fd;
     
     if(!using_json) {
         char content[SIZE];
@@ -332,6 +335,7 @@ void ultra_close(UltraRequest* request, UltraResponse* response) {
     }
 
     if(response) {
+        free(response->fd);
         free(response);
         response = NULL;
     }
@@ -372,7 +376,7 @@ const char* ultra_status(uint16_t number) {
     return "OK";
 }
 
-void ultra_send(int* fd, UltraResponse* response, const char* message) {
+void ultra_send(UltraResponse* response, const char* message) {
     size_t length = strlen(message);
 
     char buffer[SIZE];
@@ -388,5 +392,5 @@ void ultra_send(int* fd, UltraResponse* response, const char* message) {
              length,
              message);
 
-    send(*fd, buffer, strlen(buffer), 0);
+    send(*response->fd, buffer, strlen(buffer), 0);
 }
