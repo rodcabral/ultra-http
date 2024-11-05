@@ -70,4 +70,8 @@ bool ultra_get(UltraRequest *request, const char* path);
 
 bool ultra_post(UltraRequest *request, const char* path);
 
+bool ultra_delete(UltraRequest *request, const char* path);
+
+bool ultra_put(UltraRequest *request, const char* path);
+
 #endif

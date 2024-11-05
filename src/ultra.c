@@ -414,3 +414,11 @@ bool ultra_get(UltraRequest* request, const char* path) {
 bool ultra_post(UltraRequest* request, const char* path) {
     return (strncmp(request->path, path, 255) == 0) && (strncmp(request->method, "POST", 5) == 0);
 }
+
+bool ultra_delete(UltraRequest* request, const char* path) {
+    return (strncmp(request->path, path, 255) == 0) && (strncmp(request->method, "DELETE", 7) == 0);
+}
+
+bool ultra_put(UltraRequest* request, const char* path) {
+    return (strncmp(request->path, path, 255) == 0) && (strncmp(request->method, "PUT", 4) == 0);
+}
