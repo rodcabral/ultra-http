@@ -237,6 +237,18 @@ void worker() {
 
         if(current_connection != NULL) {
             current_connection->handle(current_connection->fd);
+
+            char buffer[SIZE];
+            snprintf(buffer, SIZE, 
+                     "HTTP/1.1 404 Not Found\r\n"
+                     "Content-Length: %d\r\n"
+                     "Content-Type: text/html\r\n"
+                     "\r\n"
+                     "404 Not Found",
+                     13);
+
+            send(*current_connection->fd, buffer, strlen(buffer), 0);
+
             close(*current_connection->fd);
             free(current_connection->fd);
             free(current_connection);
