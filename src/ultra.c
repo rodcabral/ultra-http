@@ -407,10 +407,10 @@ void ultra_send(UltraResponse* response, const char* message) {
     send(*response->fd, buffer, strlen(buffer), 0);
 }
 
-bool ultra_path(char* path, const char* n_path) {
-    size_t n = strlen(n_path);
+bool ultra_get(UltraRequest* request, const char* path) {
+    return (strncmp(request->path, path, 255) == 0) && (strncmp(request->method, "GET", 4) == 0);
+}
 
-    if(strncmp(path, n_path, n) == 0) return true;
-
-    return false;
+bool ultra_post(UltraRequest* request, const char* path) {
+    return (strncmp(request->path, path, 255) == 0) && (strncmp(request->method, "POST", 5) == 0);
 }

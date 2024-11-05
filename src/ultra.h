@@ -66,6 +66,8 @@ const char* ultra_status(uint16_t number);
 
 void ultra_send(UltraResponse* response, const char* message);
 
-bool ultra_path(char* path, const char* n_path);
+bool ultra_get(UltraRequest *request, const char* path);
+
+bool ultra_post(UltraRequest *request, const char* path);
 
 #endif
