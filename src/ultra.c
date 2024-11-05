@@ -406,3 +406,11 @@ void ultra_send(UltraResponse* response, const char* message) {
 
     send(*response->fd, buffer, strlen(buffer), 0);
 }
+
+bool ultra_path(char* path, const char* n_path) {
+    size_t n = strlen(n_path);
+
+    if(strncmp(path, n_path, n) == 0) return true;
+
+    return false;
+}

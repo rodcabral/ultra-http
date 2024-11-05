@@ -25,6 +25,7 @@ SOFTWARE.
 
 #include <sys/socket.h>
 #include <netinet/in.h>
+#include <stdbool.h>
 #include <inttypes.h>
 
 typedef struct {
@@ -64,5 +65,7 @@ void ultra_close(UltraRequest* request, UltraResponse* response);
 const char* ultra_status(uint16_t number);
 
 void ultra_send(UltraResponse* response, const char* message);
+
+bool ultra_path(char* path, const char* n_path);
 
 #endif
