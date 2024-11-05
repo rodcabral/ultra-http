@@ -422,3 +422,7 @@ bool ultra_delete(UltraRequest* request, const char* path) {
 bool ultra_put(UltraRequest* request, const char* path) {
     return (strncmp(request->path, path, 255) == 0) && (strncmp(request->method, "PUT", 4) == 0);
 }
+
+bool ultra_patch(UltraRequest *request, const char* path) {
+    return (strncmp(request->path, path, 255) == 0) && (strncmp(request->method, "PATCH", 6) == 0);
+}

@@ -74,4 +74,6 @@ bool ultra_delete(UltraRequest *request, const char* path);
 
 bool ultra_put(UltraRequest *request, const char* path);
 
+bool ultra_patch(UltraRequest *request, const char* path);
+
 #endif
