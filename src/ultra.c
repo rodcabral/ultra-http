@@ -179,6 +179,8 @@ UltraResponse *ultra_response(int* fd, UltraRequest* request) {
 
     ultra_response->fd = malloc(sizeof(int));
     *ultra_response->fd = *fd;
+
+    ultra_response->status = 0;
     
     if(!using_json) {
         char content[SIZE];
@@ -400,6 +402,10 @@ const char* ultra_status(uint16_t number) {
 }
 
 void ultra_send(UltraResponse* response, const char* message) {
+    if(response->status == 0) {
+        response->status = 200;
+    }
+
     size_t length = strlen(message);
 
     char buffer[SIZE];
