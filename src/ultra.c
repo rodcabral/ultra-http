@@ -149,12 +149,11 @@ UltraRequest* ultra_request(int *fd) {
 
     char buffer[SIZE];
 
-    recv(*fd, buffer, SIZE, 0);
+    int header_length = recv(*fd, buffer, SIZE, 0);
     sscanf(buffer, "%s %s", request->method, request->path);
 
-    size_t n = strlen(buffer);
-    size_t start = 0;
-    for(size_t i = 0; i < n; ++i) {
+    int start = 0;
+    for(int i = 0; i < header_length; ++i) {
         if(buffer[i] == '\r' && buffer[i+1] == '\n' && buffer[i+2] == '{') {
             start = i+2;
             break;
@@ -163,7 +162,8 @@ UltraRequest* ultra_request(int *fd) {
 
     if(start == 0) return request;
 
-    strncpy(request->body, buffer+start, n - start);
+    strncpy(request->body, buffer+start, header_length - start);
+    request->body[header_length - start] = '\0';
 
     if(!using_json) {
         if(strncmp(request->path, "/", 255) == 0) {
@@ -407,7 +407,7 @@ void ultra_send(UltraResponse* response, const char* message) {
     snprintf(buffer, SIZE, 
              "HTTP/1.1 %d %s\r\n"
              "Content-Length: %lu\r\n"
-             "Content-Type: text/html\r\n"
+             "Content-Type: application/json\r\n"
              "\r\n"
              "%s", 
              response->status, 
