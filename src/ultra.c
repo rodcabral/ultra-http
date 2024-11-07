@@ -105,8 +105,6 @@ char* get_mime(char* path) {
             return "text/javascript";
         }
 
-
-
         if(strncmp(extension, "xml", 20) == 0) {
             return "application/xml";
         }
@@ -118,8 +116,6 @@ char* get_mime(char* path) {
         if(strncmp(extension, "json", 20) == 0) {
             return "application/json";
         }
-
-
 
         if(strncmp(extension, "png", 20) == 0) {
             return "image/png";
@@ -149,11 +145,25 @@ UltraRequest* ultra_request(int *fd) {
     UltraRequest* request = malloc(sizeof(UltraRequest));
     request->path = malloc(sizeof(char) * 255);
     request->method = malloc(sizeof(char) * 255);
+    request->body = malloc(sizeof(char) * SIZE);
 
     char buffer[SIZE];
 
     recv(*fd, buffer, SIZE, 0);
     sscanf(buffer, "%s %s", request->method, request->path);
+
+    size_t n = strlen(buffer);
+    size_t start = 0;
+    for(size_t i = 0; i < n; ++i) {
+        if(buffer[i] == '\r' && buffer[i+1] == '\n' && buffer[i+2] == '{') {
+            start = i+2;
+            break;
+        }
+    }
+
+    if(start == 0) return request;
+
+    strncpy(request->body, buffer+start, n - start);
 
     if(!using_json) {
         if(strncmp(request->path, "/", 255) == 0) {
@@ -352,6 +362,7 @@ void ultra_close(UltraRequest* request, UltraResponse* response) {
         response = NULL;
     }
 }
+
 
 const char* ultra_status(uint16_t number) {
     switch(number) {

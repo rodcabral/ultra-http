@@ -42,6 +42,7 @@ typedef struct {
 typedef struct {
     char* method;
     char* path;
+    char* body;
 } UltraRequest;
 
 typedef struct {
