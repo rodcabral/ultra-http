@@ -137,7 +137,7 @@ char* get_mime(char* path) {
     return "text/plain";
 }
 
-void ultra_json() {
+void ultra_json_init() {
     using_json = true;
 }
 
