@@ -73,6 +73,16 @@ char pop(Stack* stack) {
     return ch;
 }
 
+char back(Stack* stack) {
+    return stack->tail->ch;
+}
+
+bool is_empty(Stack* stack) {
+    if(stack->head) return false;
+
+    return true;
+}
+
 UltraJson *ultra_json(char* json) {
     UltraJson* ujson = (UltraJson*)malloc(sizeof(UltraJson));
 
@@ -80,8 +90,9 @@ UltraJson *ultra_json(char* json) {
         return NULL;
     }
 
+    size_t json_length = strlen(json);
     ujson->data = json;
-    ujson->parsed = malloc(strlen(json));
+    ujson->parsed = malloc(json_length);
 
     Stack* stack = init_stack();
 
