@@ -29,7 +29,7 @@ SOFTWARE.
 #include <inttypes.h>
 
 typedef struct {
-    int max_threads;
+    uint16_t max_threads;
     pthread_t *threads;
 } tpool_t;
 
@@ -46,12 +46,12 @@ typedef struct {
 } UltraRequest;
 
 typedef struct {
-    int status;
+    uint16_t status;
     char* response;
     int* fd;
 } UltraResponse;
 
-UltraServer ultra_init(int port);
+UltraServer ultra_init(uint16_t port);
 
 void ultra_connect(UltraServer* server, void (*handle)(int* fd));
 

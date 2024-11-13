@@ -40,7 +40,7 @@ bool using_json = false;
 
 typedef struct Node{
     int* fd;
-    void(*handle)(int*fd);
+    void(*handle)(int *fd);
     struct Node* next;
 } Node;
 
@@ -149,11 +149,11 @@ UltraRequest* ultra_request(int *fd) {
 
     char buffer[SIZE];
 
-    int header_length = recv(*fd, buffer, SIZE, 0);
+    uint32_t header_length = recv(*fd, buffer, SIZE, 0);
     sscanf(buffer, "%s %s", request->method, request->path);
 
-    int start = 0;
-    for(int i = 0; i < header_length; ++i) {
+    uint32_t start = 0;
+    for(uint32_t i = 0; i < header_length; ++i) {
         if(buffer[i] == '\r' && buffer[i+1] == '\n' && buffer[i+2] == '{') {
             start = i+2;
             break;
@@ -185,8 +185,8 @@ UltraResponse *ultra_response(int* fd, UltraRequest* request) {
     if(!using_json) {
         char content[SIZE];
         char response[1024];
-        int file = open(request->path+1, O_RDONLY);
-        int bytes = read(file, content, SIZE);
+        int32_t file = open(request->path+1, O_RDONLY);
+        int32_t bytes = read(file, content, SIZE);
 
         char* not_found = "<body>404 Not Found</body>";
         if(bytes == -1) {
@@ -199,7 +199,7 @@ UltraResponse *ultra_response(int* fd, UltraRequest* request) {
                      strlen(not_found), 
                      not_found);
 
-            int bytes_sent = send(*fd, response, strlen(response), 0);
+            int32_t bytes_sent = send(*fd, response, strlen(response), 0);
 
             if(bytes_sent == -1) {
                 fprintf(stderr, "ERROR: unable to send all bytes (tried to send error 404)\n");
@@ -225,7 +225,7 @@ UltraResponse *ultra_response(int* fd, UltraRequest* request) {
 
         memcpy(response_content+strlen(response), content, bytes);
 
-        int http_bytes_sent = send(*fd, response_content, strlen(response) + bytes, 0);
+        int32_t http_bytes_sent = send(*fd, response_content, strlen(response) + bytes, 0);
 
         if(http_bytes_sent == -1) {
             fprintf(stderr, "ERROR: unable to send all bytes\n");
@@ -268,13 +268,13 @@ void worker() {
     }
 }
 
-tpool_t create_tpool(int max_threads) {
+tpool_t create_tpool(uint16_t max_threads) {
     tpool_t tpool;
 
     tpool.max_threads = max_threads;
     tpool.threads = (pthread_t*)malloc(sizeof(pthread_t) * max_threads);
 
-    for(int i = 0; i < max_threads; ++i) {
+    for(uint16_t i = 0; i < max_threads; ++i) {
         pthread_create(&tpool.threads[i], NULL, (void*)worker, NULL);
         pthread_detach(tpool.threads[i]);
     }
@@ -282,7 +282,7 @@ tpool_t create_tpool(int max_threads) {
     return tpool;
 }
 
-UltraServer ultra_init(int port) {
+UltraServer ultra_init(uint16_t port) {
     UltraServer server;
 
     server.port = port;
@@ -306,15 +306,15 @@ UltraServer ultra_init(int port) {
 
     server.addr = &addr;
 
-    int b = bind(server.sockfd, (struct sockaddr*)&addr, sizeof(addr));
+    int8_t b = bind(server.sockfd, (struct sockaddr*)&addr, sizeof(addr));
 
     if(b == -1) {
         fprintf(stderr, "ERROR: could not bind the socket\n");
         exit(1);
     }
 
-    int backlog = 32;
-    int l = listen(server.sockfd, backlog);
+    uint8_t backlog = 32;
+    int8_t l = listen(server.sockfd, backlog);
 
     if(l == -1) {
         fprintf(stderr, "ERROR: could not start listen\n");
@@ -329,7 +329,7 @@ void ultra_connect(UltraServer* server, void (*handle)(int* fd)) {
         struct sockaddr_in client;
         socklen_t c = sizeof(client);
 
-        int new_client = accept(server->sockfd, (struct sockaddr*)&client, &c);
+        int16_t new_client = accept(server->sockfd, (struct sockaddr*)&client, &c);
         
         if(new_client == -1) {
             fprintf(stderr, "ERROR: could not accept the connection\n");
