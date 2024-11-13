@@ -1,4 +1,4 @@
-# ULTRA
+# ULTRA HTTP
 
 Create multithreaded HTTP servers and APIs using C
 
