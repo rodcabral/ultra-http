@@ -1,17 +1,23 @@
 #include "../src/ultra.h"
-#include <stdio.h>
 
-void handle(int *fd) {
-    printf("Connected: %d\n", *fd);
+void handle(int* fd) {
+    ultra_json_init();
 
-    UltraRequest *request = ultra_request(fd);
-    UltraResponse *response = ultra_response(fd, request);
-    
+    UltraRequest* request = ultra_request(fd);
+    UltraResponse* response = ultra_response(fd, request);
+
+    if(ultra_get(request, "/")) {
+        ultra_send(response, "hello, world!");
+    }
+
+    if(ultra_post(request, "/")) {
+        ultra_send(response, request->body);
+    }
+
     ultra_close(request, response);
 }
 
-int main(void) {
+int main() {
     UltraServer server = ultra_init(8080);
     ultra_connect(&server, handle);
-    return 0;
 }
