@@ -46,7 +46,6 @@ typedef struct {
 
 typedef struct {
     uint16_t status;
-    char* response;
     int* fd;
 } UltraResponse;
 
