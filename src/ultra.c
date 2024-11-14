@@ -26,11 +26,9 @@ SOFTWARE.
 #include <stdio.h>
 #include <arpa/inet.h>
 #include <netdb.h>
-#include <sys/socket.h>
 #include <unistd.h>
 #include <pthread.h>
 #include <fcntl.h>
-#include <stdbool.h>
 
 #define SIZE 1000000
 

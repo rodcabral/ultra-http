@@ -24,7 +24,6 @@ SOFTWARE.
 #define _ULTRA_H_
 
 #include <sys/socket.h>
-#include <netinet/in.h>
 #include <stdbool.h>
 #include <inttypes.h>
 
