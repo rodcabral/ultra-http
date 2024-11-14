@@ -352,12 +352,17 @@ void ultra_close(UltraRequest* request, UltraResponse* response) {
         free(request->path);
         request->path = NULL;
         
+        free(request->body);
+        request->body = NULL;
+        
         free(request);
         request = NULL;
     }
 
     if(response) {
         free(response->fd);
+        response->fd = NULL;
+
         free(response);
         response = NULL;
     }
