@@ -399,23 +399,23 @@ const char* ultra_status(uint16_t number) {
 }
 
 bool ultra_get(UltraRequest* request, const char* path) {
-    return (strncmp(request->path, path, 255) == 0) && (strncmp(request->method, "GET", 4) == 0);
+    return (strncmp(request->path, path, 255) == 0) && (strncmp(request->method, "GET", 3) == 0);
 }
 
 bool ultra_post(UltraRequest* request, const char* path) {
-    return (strncmp(request->path, path, 255) == 0) && (strncmp(request->method, "POST", 5) == 0);
+    return (strncmp(request->path, path, 255) == 0) && (strncmp(request->method, "POST", 4) == 0);
 }
 
 bool ultra_delete(UltraRequest* request, const char* path) {
-    return (strncmp(request->path, path, 255) == 0) && (strncmp(request->method, "DELETE", 7) == 0);
+    return (strncmp(request->path, path, 255) == 0) && (strncmp(request->method, "DELETE", 6) == 0);
 }
 
 bool ultra_put(UltraRequest* request, const char* path) {
-    return (strncmp(request->path, path, 255) == 0) && (strncmp(request->method, "PUT", 4) == 0);
+    return (strncmp(request->path, path, 255) == 0) && (strncmp(request->method, "PUT", 3) == 0);
 }
 
 bool ultra_patch(UltraRequest *request, const char* path) {
-    return (strncmp(request->path, path, 255) == 0) && (strncmp(request->method, "PATCH", 6) == 0);
+    return (strncmp(request->path, path, 255) == 0) && (strncmp(request->method, "PATCH", 5) == 0);
 }
 
 void ultra_send(UltraResponse* response, const char* data){
