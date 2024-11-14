@@ -178,7 +178,7 @@ UltraResponse *ultra_response(int* fd, UltraRequest* request) {
     ultra_response->fd = malloc(sizeof(int));
     *ultra_response->fd = *fd;
 
-    ultra_response->status = 0;
+    ultra_response->status = 200;
     
     if(!using_json) {
         char content[SIZE];
@@ -363,7 +363,6 @@ void ultra_close(UltraRequest* request, UltraResponse* response) {
     }
 }
 
-
 const char* ultra_status(uint16_t number) {
     switch(number) {
         case 100:
@@ -399,29 +398,6 @@ const char* ultra_status(uint16_t number) {
     return "OK";
 }
 
-void ultra_send(UltraResponse* response, const char* message) {
-    if(response->status == 0) {
-        response->status = 200;
-    }
-
-    size_t length = strlen(message);
-
-    char buffer[SIZE];
-
-    snprintf(buffer, SIZE, 
-             "HTTP/1.1 %d %s\r\n"
-             "Content-Length: %lu\r\n"
-             "Content-Type: application/json\r\n"
-             "\r\n"
-             "%s", 
-             response->status, 
-             ultra_status(response->status),
-             length,
-             message);
-
-    send(*response->fd, buffer, strlen(buffer), 0);
-}
-
 bool ultra_get(UltraRequest* request, const char* path) {
     return (strncmp(request->path, path, 255) == 0) && (strncmp(request->method, "GET", 4) == 0);
 }
@@ -440,4 +416,23 @@ bool ultra_put(UltraRequest* request, const char* path) {
 
 bool ultra_patch(UltraRequest *request, const char* path) {
     return (strncmp(request->path, path, 255) == 0) && (strncmp(request->method, "PATCH", 6) == 0);
+}
+
+void ultra_send(UltraResponse* response, const char* message) {
+    size_t length = strlen(message);
+
+    char buffer[SIZE];
+
+    int buffer_size = snprintf(buffer, SIZE, 
+             "HTTP/1.1 %d %s\r\n"
+             "Content-Length: %lu\r\n"
+             "Content-Type: application/json\r\n"
+             "\r\n"
+             "%s", 
+             response->status, 
+             ultra_status(response->status),
+             length,
+             message);
+
+    send(*response->fd, buffer, buffer_size, 0);
 }
