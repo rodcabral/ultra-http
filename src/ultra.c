@@ -418,21 +418,21 @@ bool ultra_patch(UltraRequest *request, const char* path) {
     return (strncmp(request->path, path, 255) == 0) && (strncmp(request->method, "PATCH", 6) == 0);
 }
 
-void ultra_send(UltraResponse* response, const char* message) {
-    size_t length = strlen(message);
-
+void ultra_send(UltraResponse* response, const char* data){
     char buffer[SIZE];
 
-    int buffer_size = snprintf(buffer, SIZE, 
-             "HTTP/1.1 %d %s\r\n"
-             "Content-Length: %lu\r\n"
-             "Content-Type: application/json\r\n"
-             "\r\n"
-             "%s", 
-             response->status, 
-             ultra_status(response->status),
-             length,
-             message);
+    int buffer_length = snprintf(buffer, SIZE,
+                        "HTTP/1.1 %d %s\r\n"
+                        "Content-Type: application/json; charset=utf-8\r\n"
+                        "Content-Length: %lu\r\n"
+                        "Connection: keep-alive\r\n"
+                        "Keep-Alive: timeout=5\r\n"
+                        "\r\n"
+                        "%s", 
+                        response->status, 
+                        ultra_status(response->status), 
+                        strlen(data),
+                        data);
 
-    send(*response->fd, buffer, buffer_size, 0);
+    send(*response->fd, buffer, buffer_length, 0);
 }
