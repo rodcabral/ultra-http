@@ -393,9 +393,9 @@ const char* ultra_status(uint16_t number) {
             return "Forbidden";
         case 404:
             return "Not Found";
+        default:
+            return "OK";
     }
-
-    return "OK";
 }
 
 bool ultra_get(UltraRequest* request, const char* path) {
