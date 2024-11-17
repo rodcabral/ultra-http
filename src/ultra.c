@@ -86,6 +86,65 @@ Node* dequeue(Queue* queue) {
     return temp;
 }
 
+void ultra_json_init() {
+    using_json = true;
+}
+
+const char* ultra_status(uint16_t number) {
+    switch(number) {
+        case 100:
+            return "Continue";
+        case 200:
+            return "OK";
+        case 201:
+            return "Created";
+        case 202:
+            return "Accepted";
+        case 203:
+            return "Non-Authoritative Information";
+        case 204:
+            return "No content";
+        case 300:
+            return "Multiple Choices";
+        case 301:
+            return "Moved Permanently";
+        case 304:
+            return "Not Modified";
+        case 400:
+            return "Bad Request";
+        case 401:
+            return "Unauthorized";
+        case 402:
+            return "Payment Required";
+        case 403:
+            return "Forbidden";
+        case 404:
+            return "Not Found";
+        default:
+            return "OK";
+    }
+}
+
+bool ultra_get(UltraRequest* request, const char* path) {
+    return (strncmp(request->path, path, 255) == 0) && (strncmp(request->method, "GET", 3) == 0);
+}
+
+bool ultra_post(UltraRequest* request, const char* path) {
+    return (strncmp(request->path, path, 255) == 0) && (strncmp(request->method, "POST", 4) == 0);
+}
+
+bool ultra_delete(UltraRequest* request, const char* path) {
+    return (strncmp(request->path, path, 255) == 0) && (strncmp(request->method, "DELETE", 6) == 0);
+}
+
+bool ultra_put(UltraRequest* request, const char* path) {
+    return (strncmp(request->path, path, 255) == 0) && (strncmp(request->method, "PUT", 3) == 0);
+}
+
+bool ultra_patch(UltraRequest *request, const char* path) {
+    return (strncmp(request->path, path, 255) == 0) && (strncmp(request->method, "PATCH", 5) == 0);
+}
+
 char* get_mime(char* path) {
     char* extension = strtok(path, ".");
     extension = strtok(NULL, ".");
@@ -135,8 +194,23 @@ char* get_mime(char* path) {
     return "text/plain";
 }
 
-void ultra_json_init() {
-    using_json = true;
+void ultra_send_http(int* fd, uint16_t status, const char* data){
+    char buffer[SIZE];
+
+    int buffer_length = snprintf(buffer, SIZE,
+                        "HTTP/1.1 %d %s\r\n"
+                        "Content-Type: application/json; charset=utf-8\r\n"
+                        "Content-Length: %lu\r\n"
+                        "Connection: keep-alive\r\n"
+                        "Keep-Alive: timeout=5\r\n"
+                        "\r\n"
+                        "%s", 
+                        status, 
+                        ultra_status(status), 
+                        strlen(data),
+                        data);
+
+    send(*fd, buffer, buffer_length, 0);
 }
 
 UltraRequest* ultra_request(int *fd) {
@@ -177,61 +251,7 @@ UltraResponse *ultra_response(int* fd, UltraRequest* request) {
 
     ultra_response->fd = malloc(sizeof(int));
     *ultra_response->fd = *fd;
-
     ultra_response->status = 200;
-    
-    if(!using_json) {
-        char content[SIZE];
-        char response[1024];
-        int32_t file = open(request->path+1, O_RDONLY);
-        int32_t bytes = read(file, content, SIZE);
-
-        char* not_found = "<body>404 Not Found</body>";
-        if(bytes == -1) {
-            snprintf(response, 1024,
-                     "HTTP/1.1 404 Not Found\r\n"
-                     "Content-Length: %lu\r\n"
-                     "Content-Type: text/html\r\n"
-                     "\r\n"
-                     "%s",
-                     strlen(not_found), 
-                     not_found);
-
-            int32_t bytes_sent = send(*fd, response, strlen(response), 0);
-
-            if(bytes_sent == -1) {
-                fprintf(stderr, "ERROR: unable to send all bytes (tried to send error 404)\n");
-            }
-
-            close(file);
-            return ultra_response;
-        }
-
-        char* mime_type = get_mime(request->path+1);
-
-        snprintf(response, 1024,
-                 "HTTP/1.1 200 OK\r\n"
-                 "Content-Length: %d\r\n"
-                 "Content-Type: %s\r\n"
-                 "\r\n",
-                 bytes,
-                 mime_type);
-
-        char response_content[SIZE];
-
-        memcpy(response_content, response, strlen(response));
-
-        memcpy(response_content+strlen(response), content, bytes);
-
-        int32_t http_bytes_sent = send(*fd, response_content, strlen(response) + bytes, 0);
-
-        if(http_bytes_sent == -1) {
-            fprintf(stderr, "ERROR: unable to send all bytes\n");
-        }
-
-        close(file);
-        return ultra_response;
-    }
 
     return ultra_response;
 }
@@ -247,18 +267,6 @@ void worker() {
 
         if(current_connection != NULL) {
             current_connection->handle(current_connection->fd);
-
-            char buffer[SIZE];
-            snprintf(buffer, SIZE, 
-                     "HTTP/1.1 404 Not Found\r\n"
-                     "Content-Length: %d\r\n"
-                     "Content-Type: text/html\r\n"
-                     "\r\n"
-                     "404 Not Found",
-                     13);
-
-            send(*current_connection->fd, buffer, strlen(buffer), 0);
-
             close(*current_connection->fd);
             free(current_connection->fd);
             free(current_connection);
@@ -368,76 +376,6 @@ void ultra_close(UltraRequest* request, UltraResponse* response) {
     }
 }
 
-const char* ultra_status(uint16_t number) {
-    switch(number) {
-        case 100:
-            return "Continue";
-        case 200:
-            return "OK";
-        case 201:
-            return "Created";
-        case 202:
-            return "Accepted";
-        case 203:
-            return "Non-Authoritative Information";
-        case 204:
-            return "No content";
-        case 300:
-            return "Multiple Choices";
-        case 301:
-            return "Moved Permanently";
-        case 304:
-            return "Not Modified";
-        case 400:
-            return "Bad Request";
-        case 401:
-            return "Unauthorized";
-        case 402:
-            return "Payment Required";
-        case 403:
-            return "Forbidden";
-        case 404:
-            return "Not Found";
-        default:
-            return "OK";
-    }
-}
-
-bool ultra_get(UltraRequest* request, const char* path) {
-    return (strncmp(request->path, path, 255) == 0) && (strncmp(request->method, "GET", 3) == 0);
-}
-
-bool ultra_post(UltraRequest* request, const char* path) {
-    return (strncmp(request->path, path, 255) == 0) && (strncmp(request->method, "POST", 4) == 0);
-}
-
-bool ultra_delete(UltraRequest* request, const char* path) {
-    return (strncmp(request->path, path, 255) == 0) && (strncmp(request->method, "DELETE", 6) == 0);
-}
-
-bool ultra_put(UltraRequest* request, const char* path) {
-    return (strncmp(request->path, path, 255) == 0) && (strncmp(request->method, "PUT", 3) == 0);
-}
-
-bool ultra_patch(UltraRequest *request, const char* path) {
-    return (strncmp(request->path, path, 255) == 0) && (strncmp(request->method, "PATCH", 5) == 0);
-}
-
 void ultra_send(UltraResponse* response, const char* data){
-    char buffer[SIZE];
-
-    int buffer_length = snprintf(buffer, SIZE,
-                        "HTTP/1.1 %d %s\r\n"
-                        "Content-Type: application/json; charset=utf-8\r\n"
-                        "Content-Length: %lu\r\n"
-                        "Connection: keep-alive\r\n"
-                        "Keep-Alive: timeout=5\r\n"
-                        "\r\n"
-                        "%s", 
-                        response->status, 
-                        ultra_status(response->status), 
-                        strlen(data),
-                        data);
-
-    send(*response->fd, buffer, buffer_length, 0);
+    ultra_send_http(response->fd, response->status, data);
 }
