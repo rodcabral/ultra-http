@@ -267,6 +267,9 @@ void worker() {
 
         if(current_connection != NULL) {
             current_connection->handle(current_connection->fd);
+
+            ultra_send_http(current_connection->fd, 404, "Not found!");
+
             close(*current_connection->fd);
             free(current_connection->fd);
             free(current_connection);
