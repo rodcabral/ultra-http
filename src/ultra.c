@@ -194,12 +194,12 @@ char* get_mime(char* path) {
     return "text/plain";
 }
 
-void ultra_send_http(int* fd, uint16_t status, const char* data){
+void ultra_send_http(int* fd, uint16_t status, const char* data, const char* mime){
     char buffer[SIZE];
 
     int buffer_length = snprintf(buffer, SIZE,
                         "HTTP/1.1 %d %s\r\n"
-                        "Content-Type: application/json; charset=utf-8\r\n"
+                        "Content-Type: %s; charset=utf-8\r\n"
                         "Content-Length: %lu\r\n"
                         "Connection: keep-alive\r\n"
                         "Keep-Alive: timeout=5\r\n"
@@ -207,6 +207,7 @@ void ultra_send_http(int* fd, uint16_t status, const char* data){
                         "%s", 
                         status, 
                         ultra_status(status), 
+                        mime,
                         strlen(data),
                         data);
 
@@ -268,7 +269,7 @@ void worker() {
         if(current_connection != NULL) {
             current_connection->handle(current_connection->fd);
 
-            ultra_send_http(current_connection->fd, 404, "Not found!");
+            ultra_send_http(current_connection->fd, 404, "Not found!", "text/html");
 
             close(*current_connection->fd);
             free(current_connection->fd);
@@ -380,5 +381,5 @@ void ultra_close(UltraRequest* request, UltraResponse* response) {
 }
 
 void ultra_send(UltraResponse* response, const char* data){
-    ultra_send_http(response->fd, response->status, data);
+    ultra_send_http(response->fd, response->status, data, "application/json");
 }
