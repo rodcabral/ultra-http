@@ -238,12 +238,6 @@ UltraRequest* ultra_request(int *fd) {
     strncpy(request->body, buffer+start, header_length - start);
     request->body[header_length - start] = '\0';
 
-    if(!using_json) {
-        if(strncmp(request->path, "/", 255) == 0) {
-            strncpy(request->path, "/index.html", 255);
-        }
-    }
-
     return request;
 }
 
@@ -253,6 +247,27 @@ UltraResponse *ultra_response(int* fd, UltraRequest* request) {
     ultra_response->fd = malloc(sizeof(int));
     *ultra_response->fd = *fd;
     ultra_response->status = 200;
+
+    if(!using_json) {
+        if(strncmp(request->path, "/", 255) == 0) {
+            strncpy(request->path, "/index.html", 255);
+        }
+
+        FILE* file = fopen(request->path + 1, "r");
+        char buffer[SIZE];
+
+        if(!file) {
+            ultra_send_http(fd, 404, "Not found!", "text/html");
+
+            return ultra_response;
+        }
+
+        fread(&buffer, sizeof(char), SIZE, file);
+
+        ultra_send_http(fd, 200, buffer, get_mime(request->path));
+
+        fclose(file);
+    }
 
     return ultra_response;
 }
