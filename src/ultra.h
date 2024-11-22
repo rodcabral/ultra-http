@@ -53,7 +53,7 @@ UltraServer ultra_init(uint16_t port);
 
 void ultra_connect(UltraServer* server, void (*handle)(int* fd));
 
-void ultra_json_init();
+void ultra_static_files();
 
 UltraRequest *ultra_request(int* fd);
 

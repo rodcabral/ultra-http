@@ -34,7 +34,7 @@ SOFTWARE.
 
 pthread_mutex_t lock;
 
-bool using_json = false;
+bool static_files = false;
 
 typedef struct Node{
     int* fd;
@@ -86,8 +86,8 @@ Node* dequeue(Queue* queue) {
     return temp;
 }
 
-void ultra_json_init() {
-    using_json = true;
+void ultra_static_files() {
+    static_files = true;
 }
 
 const char* ultra_status(uint16_t number) {
@@ -248,7 +248,7 @@ UltraResponse *ultra_response(int* fd, UltraRequest* request) {
     *ultra_response->fd = *fd;
     ultra_response->status = 200;
 
-    if(!using_json) {
+    if(static_files) {
         if(strncmp(request->path, "/", 255) == 0) {
             strncpy(request->path, "/index.html", 255);
         }
@@ -257,7 +257,7 @@ UltraResponse *ultra_response(int* fd, UltraRequest* request) {
         char buffer[SIZE];
 
         if(!file) {
-            ultra_send_http(fd, 404, "Not found!", "text/html");
+            ultra_send_http(fd, 404, "404 Not Found", "text/html");
 
             return ultra_response;
         }
@@ -284,7 +284,7 @@ void worker() {
         if(current_connection != NULL) {
             current_connection->handle(current_connection->fd);
 
-            ultra_send_http(current_connection->fd, 404, "Not found!", "text/html");
+            ultra_send_http(current_connection->fd, 404, "404 Not Found", "text/html");
 
             close(*current_connection->fd);
             free(current_connection->fd);
