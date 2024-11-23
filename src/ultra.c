@@ -226,10 +226,10 @@ UltraRequest* ultra_request(int *fd) {
     sscanf(buffer, "%s %s", request->method, request->path);
 
     uint32_t start = 0;
+
     for(uint32_t i = 0; i < header_length; ++i) {
-        if(buffer[i] == '\r' && buffer[i+1] == '\n' && buffer[i+2] == '{') {
-            start = i+2;
-            break;
+        if(buffer[i] == '\r' && buffer[i + 1] == '\n') {
+            start = i + 2;
         }
     }
 
