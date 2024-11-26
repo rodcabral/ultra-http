@@ -34,8 +34,6 @@ SOFTWARE.
 
 pthread_mutex_t lock;
 
-bool static_files = false;
-
 typedef struct Node{
     int* fd;
     void(*handle)(int *fd);
@@ -84,10 +82,6 @@ Node* dequeue(Queue* queue) {
     }
 
     return temp;
-}
-
-void ultra_static_files() {
-    static_files = true;
 }
 
 const char* ultra_status(uint16_t number) {
@@ -145,55 +139,6 @@ bool ultra_patch(UltraRequest *request, const char* path) {
     return (strncmp(request->path, path, 255) == 0) && (strncmp(request->method, "PATCH", 5) == 0);
 }
 
-char* get_mime(char* path) {
-    char* extension = strtok(path, ".");
-    extension = strtok(NULL, ".");
-
-    if(extension != NULL) {
-        if(strncmp(extension, "html", 20) == 0) {
-            return "text/html";
-        }
-        
-        if(strncmp(extension, "css", 20) == 0) {
-            return "text/css";
-        }
-
-        if(strncmp(extension, "js", 20) == 0) {
-            return "text/javascript";
-        }
-
-        if(strncmp(extension, "xml", 20) == 0) {
-            return "application/xml";
-        }
-         
-        if(strncmp(extension, "pdf", 20) == 0) {
-            return "application/pdf";
-        }
-        
-        if(strncmp(extension, "json", 20) == 0) {
-            return "application/json";
-        }
-
-        if(strncmp(extension, "png", 20) == 0) {
-            return "image/png";
-        }
-
-        if(strncmp(extension, "jpg", 20) == 0 || strncmp(extension, "jpeg", 20) == 0) {
-            return "image/jpeg";
-        }
-
-        if(strncmp(extension, "gif", 20) == 0) {
-            return "image/gif";
-        }
-
-        if(strncmp(extension, "webp", 20) == 0) {
-            return "image/webp";
-        }
-    }
-
-    return "text/plain";
-}
-
 void ultra_send_http(int* fd, uint16_t status, const char* data, const char* mime){
     char buffer[SIZE];
 
@@ -247,27 +192,6 @@ UltraResponse *ultra_response(int* fd, UltraRequest* request) {
     ultra_response->fd = malloc(sizeof(int));
     *ultra_response->fd = *fd;
     ultra_response->status = 200;
-
-    if(static_files) {
-        if(strncmp(request->path, "/", 255) == 0) {
-            strncpy(request->path, "/index.html", 255);
-        }
-
-        FILE* file = fopen(request->path + 1, "r");
-        char buffer[SIZE];
-
-        if(!file) {
-            ultra_send_http(fd, 404, "404 Not Found", "text/html");
-
-            return ultra_response;
-        }
-
-        fread(&buffer, sizeof(char), SIZE, file);
-
-        ultra_send_http(fd, 200, buffer, get_mime(request->path));
-
-        fclose(file);
-    }
 
     return ultra_response;
 }
