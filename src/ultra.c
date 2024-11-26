@@ -186,7 +186,7 @@ UltraRequest* ultra_request(int *fd) {
     return request;
 }
 
-UltraResponse *ultra_response(int* fd, UltraRequest* request) {
+UltraResponse *ultra_response(int* fd) {
     UltraResponse *ultra_response = malloc(sizeof(UltraResponse));
 
     ultra_response->fd = malloc(sizeof(int));

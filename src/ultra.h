@@ -57,7 +57,7 @@ void ultra_static_files();
 
 UltraRequest *ultra_request(int* fd);
 
-UltraResponse *ultra_response(int* fd, UltraRequest* request);
+UltraResponse *ultra_response(int* fd);
 
 void ultra_close(UltraRequest* request, UltraResponse* response);
 
