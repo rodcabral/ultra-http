@@ -146,8 +146,6 @@ void ultra_send_http(int* fd, uint16_t status, const char* data, const char* mim
                         "HTTP/1.1 %d %s\r\n"
                         "Content-Type: %s; charset=utf-8\r\n"
                         "Content-Length: %lu\r\n"
-                        "Connection: keep-alive\r\n"
-                        "Keep-Alive: timeout=5\r\n"
                         "\r\n"
                         "%s", 
                         status, 
