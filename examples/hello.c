@@ -1,5 +1,5 @@
 #define ULTRA_IMPLEMENTATION
-#include "../src/ultra.h"
+#include "../ultra.h"
 
 void handle(int *fd) {
     UltraRequest request = ultra_request(fd);
