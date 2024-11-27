@@ -6,6 +6,8 @@ Create multithreaded HTTP servers using C
 
 You can understand the entire library just by reading this simple example.
 
+FD (file descriptor) is the unique identifier for each connection.
+
 ```c
 #include "ultra.h"
 
@@ -29,4 +31,16 @@ int main() {
     UltraServer server = ultra_init(8080);
     ultra_connect(&server, handle);
 }
+```
+
+### Others
+
+```c
+    // Add keep-alive in response
+    ultra_keep_alive(UltraResponse* response, int secs);
+```
+
+```c
+    // More specific response
+    ultra_send_http(int fd, int status, const char* data, const char* mime_type);
 ```
