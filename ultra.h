@@ -75,6 +75,8 @@ const char* ultra_status(uint16_t number);
 
 void ultra_send(UltraResponse* response, const char* data);
 
+void ultra_send_http(int fd, uint16_t status, const char* data, const char* mime);
+
 bool ultra_get(UltraRequest *request, const char* path);
 
 bool ultra_post(UltraRequest *request, const char* path);
