@@ -9,6 +9,7 @@ You can understand the entire library just by reading this simple example.
 FD (file descriptor) is the unique identifier for each connection.
 
 ```c
+#define ULTRA_IMPLEMENTATION
 #include "ultra.h"
 
 void handle(int *fd) {
