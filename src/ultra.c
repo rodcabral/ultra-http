@@ -139,7 +139,7 @@ bool ultra_patch(UltraRequest *request, const char* path) {
     return (strncmp(request->path, path, 255) == 0) && (strncmp(request->method, "PATCH", 5) == 0);
 }
 
-void ultra_send_http(int* fd, uint16_t status, const char* data, const char* mime){
+void ultra_send_http(int fd, uint16_t status, const char* data, const char* mime){
     char buffer[SIZE];
 
     int buffer_length = snprintf(buffer, SIZE,
@@ -154,19 +154,19 @@ void ultra_send_http(int* fd, uint16_t status, const char* data, const char* mim
                         strlen(data),
                         data);
 
-    send(*fd, buffer, buffer_length, 0);
+    send(fd, buffer, buffer_length, 0);
 }
 
-UltraRequest* ultra_request(int *fd) {
-    UltraRequest* request = malloc(sizeof(UltraRequest));
-    request->path = malloc(sizeof(char) * 255);
-    request->method = malloc(sizeof(char) * 255);
-    request->body = malloc(sizeof(char) * SIZE);
+UltraRequest ultra_request(int *fd) {
+    UltraRequest request;
+    request.path = malloc(sizeof(char) * 255);
+    request.method = malloc(sizeof(char) * 255);
+    request.body = malloc(sizeof(char) * SIZE);
 
     char buffer[SIZE];
 
     uint32_t header_length = recv(*fd, buffer, SIZE, 0);
-    sscanf(buffer, "%s %s", request->method, request->path);
+    sscanf(buffer, "%s %s", request.method, request.path);
 
     uint32_t start = 0;
 
@@ -178,18 +178,17 @@ UltraRequest* ultra_request(int *fd) {
 
     if(start == 0) return request;
 
-    strncpy(request->body, buffer+start, header_length - start);
-    request->body[header_length - start] = '\0';
+    strncpy(request.body, buffer+start, header_length - start);
+    request.body[header_length - start] = '\0';
 
     return request;
 }
 
-UltraResponse *ultra_response(int* fd) {
-    UltraResponse *ultra_response = malloc(sizeof(UltraResponse));
+UltraResponse ultra_response(int* fd) {
+    UltraResponse ultra_response;
 
-    ultra_response->fd = malloc(sizeof(int));
-    *ultra_response->fd = *fd;
-    ultra_response->status = 200;
+    ultra_response.fd = *fd;
+    ultra_response.status = 200;
 
     return ultra_response;
 }
@@ -206,7 +205,7 @@ void worker() {
         if(current_connection != NULL) {
             current_connection->handle(current_connection->fd);
 
-            ultra_send_http(current_connection->fd, 404, "404 Not Found", "text/html");
+            ultra_send_http(*current_connection->fd, 404, "404 Not Found", "text/html");
 
             close(*current_connection->fd);
             free(current_connection->fd);
@@ -293,28 +292,15 @@ void ultra_connect(UltraServer* server, void (*handle)(int* fd)) {
     }
 }
 
-void ultra_close(UltraRequest* request, UltraResponse* response) {
-    if(request) {
-        free(request->method);
-        request->method = NULL;
+void ultra_close(UltraRequest* request) {
+    free(request->method);
+    request->method = NULL;
 
-        free(request->path);
-        request->path = NULL;
-        
-        free(request->body);
-        request->body = NULL;
-        
-        free(request);
-        request = NULL;
-    }
+    free(request->path);
+    request->path = NULL;
 
-    if(response) {
-        free(response->fd);
-        response->fd = NULL;
-
-        free(response);
-        response = NULL;
-    }
+    free(request->body);
+    request->body = NULL;
 }
 
 void ultra_send(UltraResponse* response, const char* data){
