@@ -1,6 +1,6 @@
 # ULTRA HTTP
 
-Create multithreaded HTTP servers using C
+Create multi-threaded HTTP servers using C
 
 ### Hello World
 
