@@ -37,11 +37,11 @@ int main() {
 ### Others
 
 ```c
-    // Add keep-alive in response
-    ultra_keep_alive(UltraResponse* response, int secs);
+// Add keep-alive in response
+ultra_keep_alive(UltraResponse* response, int secs);
 ```
 
 ```c
-    // More specific response
-    ultra_send_http(int fd, int status, const char* data, const char* mime_type);
+// More specific response
+ultra_send_http(int fd, int status, const char* data, const char* mime_type);
 ```
