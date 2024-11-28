@@ -37,6 +37,8 @@ SOFTWARE.
 
 #define SIZE 1000000
 
+static int keep_alive = -1;
+
 typedef struct {
     uint16_t max_threads;
     pthread_t *threads;
@@ -76,6 +78,8 @@ const char* ultra_status(uint16_t number);
 void ultra_send(UltraResponse* response, const char* data);
 
 void ultra_send_http(int fd, uint16_t status, const char* data, const char* mime);
+
+void ultra_keep_alive(int secs);
 
 bool ultra_get(UltraRequest *request, const char* path);
 
@@ -196,19 +200,28 @@ bool ultra_patch(UltraRequest *request, const char* path) {
     return (strncmp(request->path, path, 255) == 0) && (strncmp(request->method, "PATCH", 5) == 0);
 }
 
+void ultra_keep_alive(int secs) {
+    keep_alive = secs;
+}
+
 void ultra_send_http(int fd, uint16_t status, const char* data, const char* mime){
     char buffer[SIZE];
+
+    char keep_alive_buffer[255];
+    snprintf(keep_alive_buffer, 255, "\r\nConnection: keep-alive\r\nKeep-Alive: timeout=%d\r\n", keep_alive);
 
     int buffer_length = snprintf(buffer, SIZE,
                         "HTTP/1.1 %d %s\r\n"
                         "Content-Type: %s; charset=utf-8\r\n"
-                        "Content-Length: %lu\r\n"
+                        "Content-Length: %lu"
+                        "%s"
                         "\r\n"
                         "%s", 
                         status, 
                         ultra_status(status), 
                         mime,
                         strlen(data),
+                        keep_alive != -1 ? keep_alive_buffer : "\r\n",
                         data);
 
     send(fd, buffer, buffer_length, 0);
