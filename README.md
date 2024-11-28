@@ -38,7 +38,7 @@ int main() {
 
 ```c
 // Add keep-alive in response
-ultra_keep_alive(UltraResponse* response, int secs);
+ultra_keep_alive(int secs);
 ```
 
 ```c
