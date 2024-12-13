@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <inttypes.h>
 #include <string.h>
+#include "utils.h"
 
 #define SIZE 1000000
 

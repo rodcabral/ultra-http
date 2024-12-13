@@ -1,5 +1,5 @@
-#ifndef _CUSTOM_QUEUE_H_
-#define _CUSTOM_QUEUE_H_
+#ifndef _ULTRA_CUSTOM_QUEUE_H_
+#define _ULTRA_CUSTOM_QUEUE_H_
 
 #include <stdlib.h>
 
