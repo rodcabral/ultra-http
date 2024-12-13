@@ -1,5 +1,7 @@
 #include "response.h"
 
+int keep_alive = -1;
+
 UltraResponse ultra_response(int* fd) {
     UltraResponse ultra_response;
 

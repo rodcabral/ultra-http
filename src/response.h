@@ -9,8 +9,6 @@
 
 #define SIZE 1000000
 
-int keep_alive = -1;
-
 typedef struct {
     uint16_t status;
     int fd;
