@@ -23,33 +23,13 @@ SOFTWARE.
 #ifndef _ULTRA_H_
 #define _ULTRA_H_
 
-#include <sys/socket.h>
 #include <stdbool.h>
-#include <inttypes.h>
-#include <stdlib.h>
-#include <string.h>
-#include <stdio.h>
-#include <arpa/inet.h>
-#include <netdb.h>
-#include <unistd.h>
-#include <pthread.h>
-#include <fcntl.h>
+#include "server.h"
 #include "custom_queue.h"
 
 #define SIZE 1000000
 
 static int keep_alive = -1;
-
-typedef struct {
-    uint16_t max_threads;
-    pthread_t *threads;
-} tpool_t;
-
-typedef struct {
-    uint16_t port;
-    int sockfd;
-    struct sockaddr_in *addr;
-} UltraServer;
 
 typedef struct {
     char* method;
@@ -61,10 +41,6 @@ typedef struct {
     uint16_t status;
     int fd;
 } UltraResponse;
-
-UltraServer ultra_init(uint16_t port);
-
-void ultra_connect(UltraServer* server, void (*handle)(int* fd));
 
 void ultra_static_files();
 
