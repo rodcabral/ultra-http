@@ -1,4 +1,3 @@
-#define ULTRA_IMPLEMENTATION
 #include "../ultra.h"
 
 void handle(int *fd) {
