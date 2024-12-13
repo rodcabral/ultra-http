@@ -1,14 +1,12 @@
 #include "server.h"
 
-Queue* queue;
-
 UltraServer ultra_init(uint16_t port) {
     UltraServer server;
 
     server.port = port;
     server.sockfd = socket(AF_INET, SOCK_STREAM, 0);
 
-    queue = init_queue();
+    server.queue = init_queue();
     tpool_t tpool = create_tpool(100);
     
     if(server.sockfd == -1) {
@@ -58,6 +56,6 @@ void ultra_connect(UltraServer* server, void (*handle)(int* fd)) {
         int *clientfd = malloc(sizeof(int));
         *clientfd = new_client;
 
-        enqueue(queue, clientfd, handle);
+        enqueue(server->queue, clientfd, handle);
     }
 }
