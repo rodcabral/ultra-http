@@ -1,9 +1,9 @@
-FLAGS = -Wall -Wextra -fsanitize=address
+FLAGS = -Wall -Wextra -O3 -fsanitize=address
 
-./examples/hello: ./examples/hello.c ultra.h
-	$(CC) $(FLAGS) ./examples/hello.c -o ./examples/hello
+hello: ./examples/hello.c ./src/ultra.c ./src/ultra.h
+	$(CC) $(FLAGS) ./examples/hello.c ./src/ultra.c -o hello
 
-examples: ./examples/hello
+examples: hello
 
 clean:
-	rm -f ./examples/hello
+	rm -f hello
