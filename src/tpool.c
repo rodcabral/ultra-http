@@ -1,9 +1,6 @@
 #include "tpool.h"
 
-tpool_t tpool;
-Queue* queue = NULL;
-
-void worker() {
+void worker(Queue* queue) {
     while(1) {
         Node* current_connection = dequeue(queue);
 
@@ -19,14 +16,14 @@ void worker() {
     }
 }
 
-tpool_t create_tpool(uint16_t max_threads) {
+tpool_t create_tpool(uint16_t max_threads, Queue* queue) {
     tpool_t tpool;
 
     tpool.max_threads = max_threads;
     tpool.threads = (pthread_t*)malloc(sizeof(pthread_t) * max_threads);
 
     for(uint16_t i = 0; i < max_threads; ++i) {
-        pthread_create(&tpool.threads[i], NULL, (void*)worker, NULL);
+        pthread_create(&tpool.threads[i], NULL, (void*)worker, queue);
         pthread_detach(tpool.threads[i]);
     }
 

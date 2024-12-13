@@ -12,7 +12,6 @@ typedef struct {
     pthread_t *threads;
 } tpool_t;
 
-
-tpool_t create_tpool(uint16_t max_threads);
+tpool_t create_tpool(uint16_t max_threads, Queue* queue);
 
 #endif
