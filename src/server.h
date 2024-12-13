@@ -17,6 +17,7 @@ typedef struct {
     int sockfd;
     struct sockaddr_in *addr;
     Queue* queue;
+    tpool_t tpool;
 } UltraServer;
 
 UltraServer ultra_init(uint16_t port);
