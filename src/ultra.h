@@ -29,32 +29,19 @@ SOFTWARE.
 
 #define SIZE 1000000
 
-static int keep_alive = -1;
-
 typedef struct {
     char* method;
     char* path;
     char* body;
 } UltraRequest;
 
-typedef struct {
-    uint16_t status;
-    int fd;
-} UltraResponse;
-
 void ultra_static_files();
 
 UltraRequest ultra_request(int* fd);
 
-UltraResponse ultra_response(int* fd);
-
 void ultra_close(UltraRequest* request);
 
 const char* ultra_status(uint16_t number);
-
-void ultra_send(UltraResponse* response, const char* data);
-
-void ultra_send_http(int fd, uint16_t status, const char* data, const char* mime);
 
 void ultra_keep_alive(int secs);
 

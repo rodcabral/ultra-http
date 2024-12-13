@@ -5,6 +5,7 @@
 #include <pthread.h>
 #include <unistd.h>
 #include "custom_queue.h"
+#include "response.h"
 
 typedef struct {
     uint16_t max_threads;
