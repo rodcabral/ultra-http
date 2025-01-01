@@ -29,13 +29,7 @@ UltraServer ultra_init(uint16_t port) {
         exit(1);
     }
 
-    uint8_t backlog = 32;
-    int8_t l = listen(server.sockfd, backlog);
-
-    if(l == -1) {
-        fprintf(stderr, "ERROR: could not start listen\n");
-        exit(1);
-    }
+    listen(server.sockfd, 128);
 
     return server;
 }
