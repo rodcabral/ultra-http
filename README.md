@@ -1,14 +1,14 @@
 # ULTRA HTTP
 
-Create multi-threaded HTTP servers using C
+Header-only library to create multi-threaded HTTP servers using C
 
 ### Hello World
-
-FD (file descriptor) is the unique identifier for each connection.
 
 The handle function is a callback where all the functionality goes.
 
 In the main function you just need to init and connect the server.
+
+FD (file descriptor) is the unique identifier for each connection.
 
 ```c
 #define ULTRA_IMPLEMENTATION
@@ -38,13 +38,13 @@ int main() {
 
 ### Functions
 
-Start Request and Response (handle function)
+Start request and response (handle function)
 ```c
 Ultra_Request request = ultra_request(int fd);
 Ultra_response response = ultra_response(int fd);
 ```
 
-Init server and connect (main function)
+Init and connect (main function)
 ```c
 UltraServer server = ultra_init(uint16_t PORT);
 ultra_connect(&server, handle);
@@ -52,7 +52,7 @@ ultra_connect(&server, handle);
 
 Send response
 ```c
-ultra_send(&response, request.body);
+ultra_send(&response, const char* data);
 ```
 
 Send specific response
@@ -63,12 +63,11 @@ ultra_send_http(int fd, int status, const char* data, const char* mime_type);
 ### HTTP Methods
 
 ```c
-ultra_METHOD(&request, const char* PATH);
-
-ultra_get(...);
-ultra_post(...);
-ultra_put(...);
-ultra_delete(...);
+ultra_get(&request, const char* path);
+ultra_post(&request, const char* path);
+ultra_put(&request, const char* path);
+ultra_patch(&request, const char* path);
+ultra_delete(&request, const char* path);
 ```
 
 ### Close and Clean
