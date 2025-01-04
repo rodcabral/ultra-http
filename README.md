@@ -2,7 +2,7 @@
 
 Create multi-threaded HTTP servers using C
 
-### Hello World
+## Hello World
 
 FD (file descriptor) is the unique identifier for each connection.
 
@@ -36,7 +36,7 @@ int main() {
 }
 ```
 
-### Functions
+## Functions
 
 Start Request and Response (handle function)
 ```c
@@ -60,7 +60,7 @@ Send specific response
 ultra_send_http(int fd, int status, const char* data, const char* mime_type);
 ```
 
-### HTTP Methods
+## HTTP Methods
 
 ```c
 ultra_METHOD(&request, const char* PATH);
@@ -71,7 +71,7 @@ ultra_put(...);
 ultra_delete(...);
 ```
 
-### Close and Clean
+## Close and Clean
 
 Close request (handle function)
 ```c
