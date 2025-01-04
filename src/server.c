@@ -9,7 +9,7 @@ UltraServer ultra_init(uint16_t port) {
     server.sockfd = socket(AF_INET, SOCK_STREAM, 0);
 
     server.queue = init_queue();
-    server.tpool = create_tpool(5, server.queue);
+    server.tpool = create_tpool(20, server.queue);
     
     if(server.sockfd < 0) {
         fprintf(stderr, "ERROR: could not create the socket\n");
