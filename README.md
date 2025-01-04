@@ -2,6 +2,11 @@
 
 Create multi-threaded HTTP servers using C
 
+[Hello World][#hello-world]
+[Functions][#functions]
+[HTTP Methods][#http-methods]
+[Close][#close-and-clean]
+
 ### Hello World
 
 FD (file descriptor) is the unique identifier for each connection.
