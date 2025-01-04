@@ -4,8 +4,6 @@ Create multi-threaded HTTP servers using C
 
 ### Hello World
 
-You can understand the entire library just by reading this simple example.
-
 FD (file descriptor) is the unique identifier for each connection.
 
 ```c
@@ -34,14 +32,44 @@ int main() {
 }
 ```
 
-### Others
+### Functions
 
 ```c
-// Add keep-alive in response
-ultra_keep_alive(int secs);
+// Start Request and Response (handle function)
+Ultra_Request request = ultra_request(int fd);
+Ultra_response response = ultra_response(int fd);
 ```
 
 ```c
-// More specific response
+// Init server (main function)
+UltraServer server = ultra_init(uint16_t PORT);
+ultra_connect(&server, handle);
+```
+
+```c
+// Send response
+ultra_send(&response, request.body);
+```
+
+```c
+// Specific response
 ultra_send_http(int fd, int status, const char* data, const char* mime_type);
+```
+
+### HTTP Methods
+
+```c
+ultra_METHOD(&request, PATH);
+
+ultra_get(...);
+ultra_post(...);
+ultra_put(...);
+ultra_delete(...);
+```
+
+### Close and Clean
+
+```c
+// Close request (handle function)
+ultra_close(&request);
 ```
