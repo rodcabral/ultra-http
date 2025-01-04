@@ -5,7 +5,7 @@ void handle(int *fd) {
     UltraResponse response = ultra_response(fd);
 
     if(ultra_get(&request, "/")) {
-        ultra_send(&response, "hello, world!");
+        ultra_send(&response, "{\n\"message\":\"hello, world!\"\n}");
     }
 
     if(ultra_post(&request, "/")) {
