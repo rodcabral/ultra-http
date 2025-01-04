@@ -7,7 +7,7 @@
 #include <string.h>
 #include "utils.h"
 
-#define SIZE 1000000
+#define SIZE 2500
 
 typedef struct {
     uint16_t status;

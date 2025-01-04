@@ -34,7 +34,3 @@ const char* ultra_status(uint16_t number) {
             return "OK";
     }
 }
-
-void ultra_keep_alive(int secs) {
-    int keep_alive = secs;
-}

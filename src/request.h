@@ -8,7 +8,7 @@
 #include <stdlib.h>
 #include <sys/socket.h>
 
-#define SIZE 1000000
+#define SIZE 2500
 
 typedef struct {
     char* method;
