@@ -1,8 +1,12 @@
 #include "tpool.h"
 
+pthread_mutex_t lock02;
+
 void worker(Queue* queue) {
     while(1) {
+        pthread_mutex_lock(&lock02);
         Node* current_connection = dequeue(queue);
+        pthread_mutex_unlock(&lock02);
 
         if(current_connection != NULL) {
             current_connection->handle(current_connection->fd);
